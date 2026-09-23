@@ -1,0 +1,808 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: AquaSentinel environmental intelligence API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: dashboard
+    description: Multi-region intelligence summaries
+  - name: sites
+    description: Monitoring sites and environmental context
+  - name: observations
+    description: Citizen observations and validation
+  - name: alerts
+    description: Explainable alerts and human review
+  - name: missions
+    description: Citizen verification missions
+  - name: interoperability
+    description: FHIR-compatible prototype resources
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard intelligence summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /sites:
+    get:
+      operationId: listSites
+      tags: [sites]
+      summary: List monitoring sites
+      parameters:
+        - $ref: "#/components/parameters/Status"
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Monitoring sites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Site"
+  /sites/{siteId}:
+    get:
+      operationId: getSite
+      tags: [sites]
+      summary: Get a monitoring site
+      parameters:
+        - $ref: "#/components/parameters/SiteId"
+      responses:
+        "200":
+          description: Monitoring site detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /sites/{siteId}/metrics:
+    get:
+      operationId: getSiteMetrics
+      tags: [sites]
+      summary: Get environmental metrics for a site
+      parameters:
+        - $ref: "#/components/parameters/SiteId"
+      responses:
+        "200":
+          description: Environmental metric history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Metric"
+  /sites/{siteId}/timeline:
+    get:
+      operationId: getSiteTimeline
+      tags: [sites]
+      summary: Get the early-warning timeline for a site
+      parameters:
+        - $ref: "#/components/parameters/SiteId"
+      responses:
+        "200":
+          description: Timeline events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimelineEvent"
+  /observations:
+    get:
+      operationId: listObservations
+      tags: [observations]
+      summary: List citizen observations
+      parameters:
+        - $ref: "#/components/parameters/SiteIdOptional"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Citizen observations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Observation"
+    post:
+      operationId: createObservation
+      tags: [observations]
+      summary: Submit a citizen observation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ObservationInput"
+      responses:
+        "201":
+          description: Observation accepted for validation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Observation"
+  /observations/{observationId}:
+    get:
+      operationId: getObservation
+      tags: [observations]
+      summary: Get an observation with validation details
+      parameters:
+        - $ref: "#/components/parameters/ObservationId"
+      responses:
+        "200":
+          description: Observation detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Observation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /observations/{observationId}/analyze:
+    post:
+      operationId: analyzeObservation
+      tags: [observations]
+      summary: Run deterministic observation validation
+      parameters:
+        - $ref: "#/components/parameters/ObservationId"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Observation"
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List explainable alerts
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/AlertStatus"
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+  /alerts/{alertId}:
+    get:
+      operationId: getAlert
+      tags: [alerts]
+      summary: Get an alert with evidence and review history
+      parameters:
+        - $ref: "#/components/parameters/AlertId"
+      responses:
+        "200":
+          description: Alert detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /alerts/{alertId}/review:
+    post:
+      operationId: reviewAlert
+      tags: [alerts]
+      summary: Record a human review decision
+      parameters:
+        - $ref: "#/components/parameters/AlertId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "200":
+          description: Updated alert and generated follow-up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewResult"
+  /missions:
+    get:
+      operationId: listMissions
+      tags: [missions]
+      summary: List citizen verification missions
+      responses:
+        "200":
+          description: Verification missions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mission"
+    post:
+      operationId: createMission
+      tags: [missions]
+      summary: Create a verification mission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MissionInput"
+      responses:
+        "201":
+          description: Mission created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mission"
+  /missions/{missionId}/complete:
+    post:
+      operationId: completeMission
+      tags: [missions]
+      summary: Complete a citizen verification mission
+      parameters:
+        - $ref: "#/components/parameters/MissionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MissionSubmissionInput"
+      responses:
+        "200":
+          description: Completed mission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mission"
+  /risk/{siteId}:
+    get:
+      operationId: getSiteRisk
+      tags: [sites]
+      summary: Get the latest evidence-fused risk assessment
+      parameters:
+        - $ref: "#/components/parameters/SiteId"
+      responses:
+        "200":
+          description: Latest risk assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskAssessment"
+  /risk/analyze:
+    post:
+      operationId: analyzeRisk
+      tags: [sites]
+      summary: Recalculate a site's prototype risk assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RiskInput"
+      responses:
+        "200":
+          description: Risk assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskAssessment"
+  /fhir/Observation:
+    get:
+      operationId: listFhirObservations
+      tags: [interoperability]
+      summary: List FHIR-compatible observation resources
+      responses:
+        "200":
+          description: FHIR-compatible observations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FhirObservation"
+  /fhir/RiskAssessment:
+    get:
+      operationId: listFhirRiskAssessments
+      tags: [interoperability]
+      summary: List FHIR-compatible risk assessments
+      responses:
+        "200":
+          description: FHIR-compatible risk assessments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FhirRiskAssessment"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [observations]
+      summary: Request a private object-storage upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StorageUploadRequestBody"
+      responses:
+        "200":
+          description: Presigned upload URL and normalized object path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageUploadResponse"
+components:
+  parameters:
+    SiteId:
+      name: siteId
+      in: path
+      required: true
+      schema:
+        type: string
+    SiteIdOptional:
+      name: siteId
+      in: query
+      required: false
+      schema:
+        type: string
+    Country:
+      name: country
+      in: query
+      required: false
+      schema:
+        type: string
+    Region:
+      name: region
+      in: query
+      required: false
+      schema:
+        type: string
+    ObservationId:
+      name: observationId
+      in: path
+      required: true
+      schema:
+        type: string
+    AlertId:
+      name: alertId
+      in: path
+      required: true
+      schema:
+        type: string
+    MissionId:
+      name: missionId
+      in: path
+      required: true
+      schema:
+        type: string
+    Status:
+      name: status
+      in: query
+      schema:
+        $ref: "#/components/schemas/SiteStatus"
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    SiteStatus:
+      type: string
+      enum: [stable, watch, emerging, critical]
+    AlertStatus:
+      type: string
+      enum: [new, under_review, verified, dismissed, escalated, resolved, monitoring]
+    MissionStatus:
+      type: string
+      enum: [available, in_progress, completed]
+    DashboardSummary:
+      type: object
+      required:
+        - activeSites
+        - statusCounts
+        - observationsToday
+        - anomalies
+        - pendingReviews
+        - verifiedAlerts
+        - activeInvestigations
+        - averageResponseHours
+        - latestAlert
+        - coverage
+      properties:
+        activeSites:
+          type: integer
+        statusCounts:
+          type: object
+          required: [stable, watch, emerging, critical]
+          properties:
+            stable: { type: integer }
+            watch: { type: integer }
+            emerging: { type: integer }
+            critical: { type: integer }
+        observationsToday:
+          type: integer
+        anomalies:
+          type: integer
+        pendingReviews:
+          type: integer
+        verifiedAlerts:
+          type: integer
+        activeInvestigations:
+          type: integer
+        averageResponseHours:
+          type: number
+        latestAlert:
+          anyOf:
+            - $ref: "#/components/schemas/Alert"
+            - type: "null"
+        coverage:
+          $ref: "#/components/schemas/NetworkCoverage"
+    NetworkCoverage:
+      type: object
+      required: [regions, countries, cities, simulatedSites]
+      properties:
+        regions: { type: integer }
+        countries: { type: integer }
+        cities: { type: integer }
+        simulatedSites: { type: integer }
+    Site:
+      type: object
+      required: [id, name, waterBody, city, country, region, status, risk, confidence, resilience, latitude, longitude, lastUpdated, simulated]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        waterBody: { type: string }
+        city: { type: string }
+        country: { type: string }
+        region: { type: string }
+        status: { $ref: "#/components/schemas/SiteStatus" }
+        risk: { type: integer }
+        confidence: { type: integer }
+        resilience: { type: integer }
+        latitude: { type: number }
+        longitude: { type: number }
+        lastUpdated: { type: string }
+        simulated: { type: boolean }
+    SiteDetail:
+      allOf:
+        - $ref: "#/components/schemas/Site"
+        - type: object
+          required: [description, currentMetrics, riskAssessment, observations, timeline, actions]
+          properties:
+            description: { type: string }
+            currentMetrics:
+              type: array
+              items: { $ref: "#/components/schemas/Metric" }
+            riskAssessment: { $ref: "#/components/schemas/RiskAssessment" }
+            observations:
+              type: array
+              items: { $ref: "#/components/schemas/Observation" }
+            timeline:
+              type: array
+              items: { $ref: "#/components/schemas/TimelineEvent" }
+            actions:
+              type: array
+              items: { $ref: "#/components/schemas/ResponseAction" }
+    Metric:
+      type: object
+      required: [parameter, current, baseline, unit, change, trend, status, history, source, simulated]
+      properties:
+        parameter: { type: string }
+        current: { type: number }
+        baseline: { type: number }
+        unit: { type: string }
+        change: { type: number }
+        trend: { type: string, enum: [increasing, decreasing, stable] }
+        status: { type: string, enum: [normal, abnormal, unavailable, estimated, simulated] }
+        history:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: number }
+        source: { type: string }
+        simulated: { type: boolean }
+    ObservationInput:
+      type: object
+      required: [siteId, waterAppearance, unusualSmell, visiblePollution, latitude, longitude]
+      properties:
+        siteId: { type: string }
+        waterAppearance: { type: string }
+        unusualSmell: { type: string }
+        visiblePollution: { type: string }
+        notes: { type: string }
+        imageName: { type: ["string", "null"] }
+        latitude: { type: number }
+        longitude: { type: number }
+    Observation:
+      type: object
+      required: [id, siteId, siteName, createdAt, source, validationStatus, qualityScore, aiConfidence, responses, imageAnalysis]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        siteName: { type: string }
+        createdAt: { type: string }
+        source: { type: string }
+        validationStatus: { type: string, enum: [pending, validated, needs_review] }
+        qualityScore: { type: integer }
+        aiConfidence: { type: integer }
+        latitude: { type: number }
+        longitude: { type: number }
+        responses:
+          type: object
+          additionalProperties: { type: string }
+        imageAnalysis:
+          type: object
+          required: [summary, indicators]
+          properties:
+            summary: { type: string }
+            indicators:
+              type: array
+              items:
+                type: object
+                required: [label, confidence]
+                properties:
+                  label: { type: string }
+                  confidence: { type: integer }
+    RiskFactor:
+      type: object
+      required: [name, value, contribution, direction, source, explanation]
+      properties:
+        name: { type: string }
+        value: { type: integer }
+        contribution: { type: integer }
+        direction: { type: string, enum: [up, down, neutral] }
+        source: { type: string }
+        explanation: { type: string }
+    RiskAssessment:
+      type: object
+      required: [id, siteId, risk, confidence, severity, summary, factors, uncertainties, humanVerificationRequired, generatedAt]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        risk: { type: integer }
+        confidence: { type: integer }
+        severity: { $ref: "#/components/schemas/SiteStatus" }
+        summary: { type: string }
+        factors:
+          type: array
+          items: { $ref: "#/components/schemas/RiskFactor" }
+        uncertainties:
+          type: array
+          items: { type: string }
+        humanVerificationRequired: { type: boolean }
+        generatedAt: { type: string }
+    StorageUploadRequestBody:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        size: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, minLength: 1, maxLength: 120 }
+    StorageUploadResponse:
+      type: object
+      required: [uploadURL, objectPath, metadata]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          type: object
+          required: [name, size, contentType]
+          properties:
+            name: { type: string }
+            size: { type: integer }
+            contentType: { type: string }
+        humanVerificationRequired: { type: boolean }
+        generatedAt: { type: string }
+    TimelineEvent:
+      type: object
+      required: [id, time, label, detail, category]
+      properties:
+        id: { type: string }
+        time: { type: string }
+        label: { type: string }
+        detail: { type: string }
+        category: { type: string, enum: [weather, sensor, citizen, ai, human, response] }
+    Evidence:
+      type: object
+      required: [id, label, detail, contribution, source]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        detail: { type: string }
+        contribution: { type: string, enum: [high, medium, low] }
+        source: { type: string }
+    Alert:
+      type: object
+      required: [id, siteId, siteName, title, severity, risk, confidence, status, trigger, createdAt]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        siteName: { type: string }
+        title: { type: string }
+        severity: { $ref: "#/components/schemas/SiteStatus" }
+        risk: { type: integer }
+        confidence: { type: integer }
+        status: { $ref: "#/components/schemas/AlertStatus" }
+        trigger: { type: string }
+        createdAt: { type: string }
+    AlertDetail:
+      allOf:
+        - $ref: "#/components/schemas/Alert"
+        - type: object
+          required: [description, evidence, assessment, reviewHistory]
+          properties:
+            description: { type: string }
+            evidence:
+              type: array
+              items: { $ref: "#/components/schemas/Evidence" }
+            assessment: { $ref: "#/components/schemas/RiskAssessment" }
+            reviewHistory:
+              type: array
+              items:
+                type: object
+                required: [id, action, actor, timestamp]
+                properties:
+                  id: { type: string }
+                  action: { type: string }
+                  actor: { type: string }
+                  timestamp: { type: string }
+    ReviewInput:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [verify, request_evidence, dismiss, escalate, monitor] }
+        note: { type: string }
+    ReviewResult:
+      type: object
+      required: [alert, mission, investigationCreated, responsePlan]
+      properties:
+        alert: { $ref: "#/components/schemas/Alert" }
+        mission:
+          anyOf:
+            - $ref: "#/components/schemas/Mission"
+            - type: "null"
+        investigationCreated: { type: boolean }
+        responsePlan:
+          type: array
+          items: { $ref: "#/components/schemas/ResponseAction" }
+    ResponseAction:
+      type: object
+      required: [id, phase, label, completed]
+      properties:
+        id: { type: string }
+        phase: { type: string, enum: [immediate, short_term, long_term] }
+        label: { type: string }
+        completed: { type: boolean }
+    MissionInput:
+      type: object
+      required: [siteId, alertId]
+      properties:
+        siteId: { type: string }
+        alertId: { type: string }
+    Mission:
+      type: object
+      required: [id, siteId, siteName, alertId, title, reason, instructions, estimatedMinutes, status, createdAt]
+      properties:
+        id: { type: string }
+        siteId: { type: string }
+        siteName: { type: string }
+        alertId: { type: string }
+        title: { type: string }
+        reason: { type: string }
+        instructions:
+          type: array
+          items: { type: string }
+        estimatedMinutes: { type: integer }
+        status: { $ref: "#/components/schemas/MissionStatus" }
+        createdAt: { type: string }
+    MissionSubmissionInput:
+      type: object
+      required: [waterAppearance, visiblePollution, notes]
+      properties:
+        waterAppearance: { type: string }
+        visiblePollution: { type: string }
+        notes: { type: string }
+    RiskInput:
+      type: object
+      required: [siteId]
+      properties:
+        siteId: { type: string }
+    FhirObservation:
+      type: object
+      required: [resourceType, id, status, code, subject, effectiveDateTime, value, unit, location, interpretation]
+      properties:
+        resourceType: { type: string, const: Observation }
+        id: { type: string }
+        status: { type: string }
+        code: { type: string }
+        subject: { type: string }
+        effectiveDateTime: { type: string }
+        value: { type: number }
+        unit: { type: string }
+        location: { type: string }
+        interpretation: { type: string }
+    FhirRiskAssessment:
+      type: object
+      required: [resourceType, id, status, subject, occurrenceDateTime, prediction, basis]
+      properties:
+        resourceType: { type: string, const: RiskAssessment }
+        id: { type: string }
+        status: { type: string }
+        subject: { type: string }
+        occurrenceDateTime: { type: string }
+        prediction:
+          type: object
+          required: [outcome, probability, qualitativeRisk]
+          properties:
+            outcome: { type: string }
+            probability: { type: number }
+            qualitativeRisk: { type: string }
+        basis:
+          type: array
+          items: { type: string }
+
