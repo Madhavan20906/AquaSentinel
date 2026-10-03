@@ -59,6 +59,16 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    proxy: {
+      '/api': {
+        target: process.env.API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: process.env.API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port,
