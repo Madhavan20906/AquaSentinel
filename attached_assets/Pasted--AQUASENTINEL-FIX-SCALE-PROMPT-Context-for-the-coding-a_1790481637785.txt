@@ -1,0 +1,105 @@
+# AQUASENTINEL — FIX & SCALE PROMPT
+
+## Context for the coding agent
+
+You are working on the existing AquaSentinel repository (pnpm workspace, Express + Drizzle/Postgres backend at `artifacts/api-server`, React frontend at `artifacts/aquasentinel/src/app-shell.tsx`, contract-first API via `lib/api-spec/openapi.yaml`). The scaffold and UI are already good — do not rebuild them. Your job is to close specific, named gaps between what the product *claims* and what the code *does*, and to add a credible scalability/feasibility story on top. Work file-by-file against the existing structure. Do not introduce new frameworks, new pages, gamification, or admin consoles. Every change below should be the smallest real fix that closes the gap, not a rewrite.
+
+Do not fabricate performance numbers, do not claim scientific validation, do not claim full FHIR certification. Where something remains a prototype, say so explicitly in the UI and README.
+
+---
+
+## PART 1 — Fix the 13 identified gaps
+
+### 1. Make the AI actually compute something (highest priority)
+
+In `artifacts/api-server/src/lib/aquasentinel-data.ts`, replace `defaultRiskAssessment(siteId, risk = 78, confidence = 71)` with a real function that:
+- Reads the site's stored metric history (turbidity, dissolved oxygen, rainfall flag, citizen-report count) instead of accepting risk/confidence as fixed default arguments.
+- Computes each factor's `value` and `contribution` from that data using a documented, simple formula (e.g. `contribution = weight * normalized_deviation_from_baseline`). Weights come from `PART 1.6` config below, not from ad hoc numbers.
+- Produces `risk` as the weighted sum of factor values, and `confidence` as a separate function of evidence *count* and *source diversity* (e.g. more independent observations + more signal types = higher confidence), never copying the risk value.
+- Recomputes when called — running it twice on the same inputs must return the same output; running it after a metric changes must return a different output. Add a small test proving this (see Part 1.7).
+
+### 2. Fix the observation-analysis endpoint
+
+In `artifacts/api-server/src/routes/aquasentinel.ts`, replace the hardcoded `aiConfidence: 86` in `POST /observations/:observationId/analyze` with logic that reads the submitted `responses` (water appearance, smell, visible pollution) and `imageAnalysis` fields and derives a confidence score from completeness + consistency with nearby recent observations at the same site (e.g. missing fields lower confidence; agreement with the last N observations at that site raises it). Return the per-field reasoning in the response, not just a number.
+
+### 3. Add one real predictive element (turns "early warning" from a label into a fact)
+
+Add a lightweight trend projection: given the last N stored metric points for a site, compute a simple linear or rolling-average extrapolation and surface it as e.g. *"At the current rate of change, turbidity is projected to cross the emerging-risk threshold in ~18 hours."* Store the method name in the response (`"method": "linear-trend-v1"`) so it's clearly labeled as a lightweight projection, not a scientific forecast.
+
+### 4. Correct the FHIR resource shapes
+
+In the `/fhir/Observation` and `/fhir/RiskAssessment` handlers, fix the fields that aren't spec-valid FHIR R4:
+- `code` should be a `CodeableConcept` object (`{ coding: [{ system, code, display }] }`), not a bare string.
+- `subject` and `location` should be `Reference` objects (`{ reference: "Site/ADYAR-01" }`), not raw strings.
+- `unit` should use a recognized UCUM code where the value is a real measurement, or be removed/relabeled where the value is a derived confidence score rather than a measurement.
+- Update the "Compatibility note" copy on the Interoperability page to say precisely what's implemented: *"Structured as FHIR R4 Observation/RiskAssessment resources for two resource types; not a certified FHIR server."* Don't say "FHIR R4" anywhere unless the shapes are actually valid — validate against the public HL7 FHIR R4 schema for these two resource types before making that claim.
+
+### 5. Deepen at least one more site beyond ADYAR-01
+
+Pick 2 additional seeded sites (e.g. `SEMA-09`, already at "emerging" status) and give them a real (if smaller) evidence trail: a few observations, a timeline, and a computed (not copy-pasted) risk assessment using the Part 1.1 engine. This proves the loop generalizes past one scripted scenario without requiring 12 full scenarios.
+
+### 6. Replace the hardcoded Analytics chart
+
+In the `Analytics()` component in `app-shell.tsx`, replace the literal array `[42,55,48,64,...]` with values derived from actual stored observation/alert timestamps (e.g. count of validated observations per day over the last 14 days). If there isn't enough real demo data to make 14 meaningful points, generate the demo data *once* as timestamped seed rows (not as a chart-time literal) so the number is a real aggregation of stored rows, however small.
+
+### 7. Add minimal real role gating
+
+Don't build full auth. Do add a lightweight, honestly-labeled role check: store the selected role from the Settings page in a session/local state, and have the Alert review actions and Admin-style controls check that role before allowing "verify/dismiss/escalate" (citizen role sees a read-only view of the same alert; officer/researcher roles see the review controls). Label it in the README as "role-aware demo gating, not production authentication."
+
+### 8. Add a minimal ingestion abstraction
+
+Create one interface, e.g. `EnvironmentalDataSource`, with a single implementation (`SimulatedDataSource`) that the risk engine and dashboard read through, rather than reading seed rows directly. This doesn't require a real external feed — it requires the *seam* to exist, so you can genuinely say "a live sensor or weather API can be plugged in without changing the risk engine or UI," and show the interface in the README/architecture doc as evidence.
+
+### 9. Document the methodology instead of leaving it implicit
+
+Add a short `docs/risk-methodology.md`: the exact weights used (must match Part 1.6 config), why those weights, what "confidence" is computed from, and an explicit statement that these are prototype/demo weights pending domain-expert validation — matching the honesty principle already used elsewhere in the product copy.
+
+### 10. Add minimal automated tests
+
+At minimum: one backend test proving the Part 1.1 risk function is deterministic and changes with input; one test proving the Part 1.4 FHIR resources validate against the R4 schema shape for the two resource types used; one frontend test that the citizen observation form submits and the alert review actions call the right endpoint. This doesn't need full coverage — it needs to exist so "no tests" is no longer true.
+
+### 11. Add basic security/privacy hygiene
+
+Confirm `.env.example` exists and is current; add file-type/size validation on the observation image upload route; ensure citizen `user_id`/identity fields are never returned in public-facing site/dashboard responses (only in the citizen's own observation history), matching the privacy separation already implied by the product's design.
+
+### 12. Accessibility pass
+
+Confirm every `StatusPill` renders a text label alongside color (already mostly true — verify no instance relies on color alone), add `aria-label`s to icon-only buttons (e.g. the FHIR row chevron button), and check the Observe flow's form controls are keyboard-navigable end to end.
+
+### 13. Add the missing submission artifacts
+
+Write the actual `README.md` (project overview, problem, architecture diagram as a Mermaid block, tech stack, install/run instructions, demo credentials if any, demo scenario walkthrough, **explicit Limitations section**, **explicit Responsible AI section**, future roadmap). Add a `docs/architecture.md` with the diagram. These should state plainly which parts are real computation (Part 1.1–1.3) versus simulated data (seed sites, demo scenario) — this honesty is a credibility asset with this judging panel, not a weakness to hide.
+
+---
+
+## PART 2 — Features and information specifically to raise the Feasibility & Scalability score
+
+The current build proves the workflow but not that it scales. Add the following — these are lightweight additions, not a platform rebuild:
+
+### 2.1 Multi-source, multi-city readiness (product feature)
+Extend the `Site` schema/seed structure so a site can carry a `city` and `country` field beyond "Chennai" (schema already has `city` — populate at least one demo site in a second city, e.g. a European city relevant to OneAquaHealth's EU funding context) to visibly demonstrate the platform is not hardcoded to one location.
+
+### 2.2 Configurable thresholds and weights (already partially scaffolded — finish it)
+Expose the Part 1.6 weight config and the risk-band thresholds (25/50/75) through a single config object/file rather than inline constants, and reference it directly from `docs/risk-methodology.md` so a reader can see the same numbers in the docs and the code — this is what makes "configurable, not hardcoded" a demonstrable claim rather than an assertion.
+
+### 2.3 Pluggable model interfaces (ties to Part 1.8)
+Formalize `AnomalyDetector`, `RiskModel`, and `EvidenceFusionEngine` as named interfaces/types in the backend (even with one implementation each). Document in the README: *"A validated scientific model can replace `SimulatedRiskModel` by implementing the same interface, without changing the API contract or frontend."* This directly answers the Scalability criterion's "integration with existing systems" language.
+
+### 2.4 Load/operational feasibility note
+Add a short `docs/scaling-notes.md` covering: expected read/write pattern (many citizen submissions, few officer reviews), where a real deployment would add caching (dashboard aggregates), and how the current Postgres schema supports horizontal growth (sites/observations are naturally partitionable by city). No infrastructure needs to be built — this is a one-page engineering feasibility argument, written honestly as "how this would scale," not "benchmarked to scale."
+
+### 2.5 Adoption/rollout path (submission narrative, not code)
+Add a short "Path to real-world use" section to the README: Phase 1 (this prototype) → Phase 2 (pilot with one real monitoring site using the `EnvironmentalDataSource` interface against a real sensor feed) → Phase 3 (validated risk model from domain experts replacing `SimulatedRiskModel`) → Phase 4 (multi-city). This is the same roadmap structure already used elsewhere in the project's own thinking — write it once, concretely, in the actual submission.
+
+### 2.6 Interoperability as a scaling lever, not just a compliance checkbox
+In the Interoperability page copy, explicitly connect FHIR-shaped export to scalability: *"Exposing observations and risk assessments as FHIR-compatible resources lets this platform plug into existing municipal or public-health data systems rather than requiring them to adopt a new one — this is the mechanism for integration at scale, not just a standards checkbox."* Only add this copy once Part 1.4 is fixed and true.
+
+---
+
+## Constraints (apply to every item above)
+
+- Do not add authentication providers, gamification, gamified leaderboards, gamified missions beyond what exists, gamified rewards, or an admin console.
+- Do not claim FHIR certification, scientific validation, or specific accuracy percentages anywhere.
+- Every new number shown in the UI must trace to a real computation or a clearly labeled simulated seed value — no new hardcoded "AI-sounding" constants.
+- Keep all existing microcopy tone (cautious, non-alarmist, uncertainty-forward) — new copy must match it.
+- Prioritize in this order if time runs out: 1.1 → 1.2 → 1.4 → 1.13 (README) → 2.3 → 2.5 → everything else. These seven cover the largest share of judge-visible credibility per hour of work.
