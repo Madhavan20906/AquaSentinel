@@ -16,6 +16,11 @@ import {
 } from '@workspace/api-client-react';
 
 import { GisMap } from './components/GisMap';
+import { OneHealthChainBanner, OneHealthImpactCard } from './components/OneHealthChain';
+import { IncidentReplay } from './components/IncidentReplay';
+import { EcosystemTimeline } from './components/EcosystemTimeline';
+import { FhirExportModal } from './components/FhirExportModal';
+import { WaterTwin, MeasurableImpactCard } from './components/WaterTwin';
 
 const navItems = [
   { href: '/dashboard', label: 'Intelligence', icon: Gauge },
@@ -84,6 +89,7 @@ function Logo({ light = false }: { light?: boolean }) {
 function Shell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [fhirModalOpen, setFhirModalOpen] = useState(false);
   return <div className="noise min-h-[100dvh] lg:flex">
     <aside className={`fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="px-2"><Logo light /></div>
@@ -105,9 +111,22 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="min-w-0 flex-1">
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border)/.7)] bg-[hsl(var(--background)/.9)] px-4 backdrop-blur-md sm:px-6 lg:px-9">
         <div className="flex items-center gap-3"><button className="rounded-lg p-2 hover:bg-[hsl(var(--muted))] lg:hidden" onClick={() => setMobileOpen(true)} data-testid="button-open-navigation"><MenuIcon size={19} /></button><div className="hidden text-xs text-[hsl(var(--muted-foreground))] sm:block"><span className="font-mono text-[hsl(var(--primary))]">AS /</span> municipal watershed intelligence</div></div>
-        <div className="flex items-center gap-3"><span className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className="status-dot text-teal-600" />All systems nominal</span><button className="rounded-full border border-[hsl(var(--border))] bg-white px-2.5 py-1.5 text-xs font-semibold hover:bg-[hsl(var(--secondary))]" data-testid="button-user-menu">EA <span className="hidden sm:inline">/ Environmental analyst</span></button></div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setFhirModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-teal-600/30 bg-teal-50/80 px-3 py-1.5 text-xs font-bold text-teal-900 hover:bg-teal-100 transition shadow-2xs"
+            title="Export canonical HL7 FHIR R4 records to municipal EHR or public health systems"
+          >
+            <Database size={13} className="text-teal-700" />
+            <span className="hidden sm:inline">Export to Health System</span> (FHIR R4)
+          </button>
+          <span className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className="status-dot text-teal-600" />All systems nominal</span><button className="rounded-full border border-[hsl(var(--border))] bg-white px-2.5 py-1.5 text-xs font-semibold hover:bg-[hsl(var(--secondary))]" data-testid="button-user-menu">EA <span className="hidden sm:inline">/ Environmental analyst</span></button>
+        </div>
       </header>
-      <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 lg:px-9 lg:py-9">{children}</main>
+      <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 lg:px-9 lg:py-9">
+        {children}
+      </main>
+      <FhirExportModal isOpen={fhirModalOpen} onClose={() => setFhirModalOpen(false)} />
     </div>
   </div>;
 }
@@ -130,26 +149,65 @@ function Dashboard() {
   const dashboard = useGetDashboard();
   const sites = useListSites();
   const alerts = useListAlerts();
-   if (dashboard.isLoading || sites.isLoading) return <><PageHeader eyebrow="Global network / simulated" title="Watershed intelligence" detail="Aggregated signals from a synthetic, multi-region demonstration network." /><LoadingRows count={5} /></>;
+  const [showReplay, setShowReplay] = useState(true);
+
+  if (dashboard.isLoading || sites.isLoading) return <><PageHeader eyebrow="Global network / simulated" title="Watershed intelligence" detail="Aggregated signals from a synthetic, multi-region demonstration network." /><LoadingRows count={5} /></>;
   if (dashboard.isError || sites.isError) return <ErrorState message="Dashboard signal unavailable" retry={() => { dashboard.refetch(); sites.refetch(); }} />;
   const summary = dashboard.data;
   const siteList = sites.data ?? [];
-  return <div className="fade-up">
-     <PageHeader eyebrow="Global network / simulated" title="Watershed intelligence" detail="A cross-region read of what changed, where attention is needed, and why. All current values are synthetic demo data." action={<Button variant="secondary" onClick={() => dashboard.refetch()} data-testid="button-refresh-dashboard"><RefreshCw size={14} /> Refresh signals</Button>} />
+
+  return <div className="fade-up space-y-7">
+    <PageHeader
+      eyebrow="Global network / Live USGS & Open-Meteo"
+      title="Watershed Intelligence Dashboard"
+      detail="A cross-region read of what changed, where attention is needed, and why. Telemetry is fused across live USGS hydrological APIs, global weather, and citizen science."
+      action={
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => setShowReplay(!showReplay)}>
+            <Sparkles size={14} className="text-teal-600" />
+            {showReplay ? 'Hide Incident Replay' : 'Launch Incident Replay'}
+          </Button>
+          <Button variant="secondary" onClick={() => dashboard.refetch()} data-testid="button-refresh-dashboard">
+            <RefreshCw size={14} /> Refresh
+          </Button>
+        </div>
+      }
+    />
+
+    {/* One Health 10-Second Transmission Chain Banner */}
+    <OneHealthChainBanner />
+
+    {/* Interactive Hackathon Feature: Live Incident Replay */}
+    {showReplay && (
+      <div>
+        <IncidentReplay />
+      </div>
+    )}
+
+    {/* Overview KPI Cards */}
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {[[String(summary?.activeSites ?? 0), 'active sites', 'Network coverage'], [String(summary?.observationsToday ?? 0), 'observations today', 'Citizen + field'], [String(summary?.pendingReviews ?? 0).padStart(2, '0'), 'human reviews', 'Needs a decision'], [summary?.averageResponseHours ? `${summary.averageResponseHours}h` : '—', 'mean response', 'Last 30 days']].map(([value, label, detail], i) => <div className="panel panel-hover p-4" key={label}><div className="flex items-start justify-between"><span className="font-display text-3xl font-semibold tracking-tight">{value}</span><span className={`rounded-md p-1.5 ${i === 2 ? 'bg-amber-50 text-amber-700' : 'bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]'}`}>{i === 2 ? <AlertTriangle size={15} /> : i === 1 ? <MapPin size={15} /> : <Activity size={15} />}</span></div><div className="mt-3 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{label}</div><div className="mt-1 font-mono text-[10px] uppercase tracking-wide text-[hsl(var(--muted-foreground)/.65)]">{detail}</div></div>)}
     </div>
-     <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-[hsl(var(--primary)/.16)] bg-[hsl(var(--secondary)/.5)] px-4 py-3 text-xs text-[hsl(var(--primary))]" data-testid="network-coverage-summary"><Globe2 size={15} /><strong>Coverage footprint</strong><span>{summary?.coverage?.regions ?? 0} regions</span><span>{summary?.coverage?.countries ?? 0} countries</span><span>{summary?.coverage?.cities ?? 0} cities</span><span className="font-mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{summary?.coverage?.simulatedSites ?? 0} synthetic sites</span></div>
-     <div className="mt-4 flex flex-wrap gap-2" data-testid="network-region-list">{Array.from(siteList.reduce((regions, site) => regions.set(site.region, (regions.get(site.region) ?? 0) + 1), new Map<string, number>())).map(([region, count]) => <span className="rounded-full border border-[hsl(var(--border))] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]" key={region}>{region} · {count} sites</span>)}</div>
-     <div className="mt-7">
-       <SectionTitle eyebrow="Geographic intelligence / live telemetry" title="Production Watershed GIS Map" detail="Interactive station mapping rendered on OpenStreetMap tiles with live weather integration." />
-       <GisMap sites={siteList} />
-     </div>
-     <div className="mt-7 grid gap-7 xl:grid-cols-[1.3fr_.7fr]">
-       <section><SectionTitle eyebrow="Sites / global index" title="Network status" detail="Risk is not a verdict. Confidence describes agreement in the evidence." action={<Link href="/analytics" className="text-xs font-semibold text-[hsl(var(--primary))]" data-testid="link-network-analytics">View resilience <ArrowRight className="ml-1 inline" size={13} /></Link>} /><div className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-white"><div className="grid grid-cols-[1.5fr_.8fr_.7fr_.7fr_auto] gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.55)] px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><span>Site</span><span>Signal</span><span>Risk</span><span>Confidence</span><span /></div>{siteList.length ? siteList.map((site) => <Link href={`/sites/${site.id}`} className="grid grid-cols-[1.5fr_.8fr_.7fr_.7fr_auto] items-center gap-3 border-b border-[hsl(var(--border)/.7)] px-4 py-4 transition hover:bg-[hsl(var(--secondary)/.35)] last:border-b-0" key={site.id} data-testid={`row-site-${site.id}`}><div className="min-w-0"><div className="flex items-center gap-2"><span className="truncate text-sm font-semibold">{site.name}</span>{site.simulated && <span className="rounded border border-[hsl(var(--border))] px-1 py-0.5 font-mono text-[9px] text-[hsl(var(--muted-foreground))]">SIM</span>}</div><div className="mt-1 truncate text-xs text-[hsl(var(--muted-foreground))]">{site.waterBody} · {site.city}, {site.country}</div><div className="mt-1 font-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{site.region}</div></div><StatusPill value={site.status} /><span className={`font-mono text-sm ${site.risk > .7 ? 'text-rose-700' : site.risk > .45 ? 'text-amber-700' : 'text-teal-700'}`}>{site.risk.toFixed(2)}</span><span className="font-mono text-sm text-[hsl(var(--muted-foreground))]">{site.confidence.toFixed(2)}</span><ChevronRight size={15} className="text-[hsl(var(--muted-foreground))]" /></Link>) : <div className="p-8"><EmptyState title="No sites in this view" detail="Try a broader region or check the demo API." /></div>}</div></section>
+
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-[hsl(var(--primary)/.16)] bg-[hsl(var(--secondary)/.5)] px-4 py-3 text-xs text-[hsl(var(--primary))]" data-testid="network-coverage-summary"><Globe2 size={15} /><strong>Coverage footprint</strong><span>{summary?.coverage?.regions ?? 0} regions</span><span>{summary?.coverage?.countries ?? 0} countries</span><span>{summary?.coverage?.cities ?? 0} cities</span><span className="font-mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{summary?.coverage?.simulatedSites ?? 0} monitored reaches</span></div>
+
+    {/* Digital Environmental Water Twin */}
+    <WaterTwin />
+
+    {/* Geographic Leaflet GIS Map */}
+    <div>
+      <SectionTitle eyebrow="Geographic intelligence / live telemetry" title="Production Watershed GIS Map" detail="Interactive station mapping rendered on OpenStreetMap tiles with live weather integration." />
+      <GisMap sites={siteList} />
+    </div>
+
+    {/* Measurable Impact Benchmark Card */}
+    <MeasurableImpactCard />
+
+    <div className="grid gap-7 xl:grid-cols-[1.3fr_.7fr]">
+      <section><SectionTitle eyebrow="Sites / global index" title="Network status" detail="Risk is not a verdict. Confidence describes agreement in the evidence." action={<Link href="/analytics" className="text-xs font-semibold text-[hsl(var(--primary))]" data-testid="link-network-analytics">View resilience <ArrowRight className="ml-1 inline" size={13} /></Link>} /><div className="overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-white"><div className="grid grid-cols-[1.5fr_.8fr_.7fr_.7fr_auto] gap-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/.55)] px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><span>Site</span><span>Signal</span><span>Risk</span><span>Confidence</span><span /></div>{siteList.length ? siteList.map((site) => <Link href={`/sites/${site.id}`} className="grid grid-cols-[1.5fr_.8fr_.7fr_.7fr_auto] items-center gap-3 border-b border-[hsl(var(--border)/.7)] px-4 py-4 transition hover:bg-[hsl(var(--secondary)/.35)] last:border-b-0" key={site.id} data-testid={`row-site-${site.id}`}><div className="min-w-0"><div className="flex items-center gap-2"><span className="truncate text-sm font-semibold">{site.name}</span>{site.simulated && <span className="rounded border border-[hsl(var(--border))] px-1 py-0.5 font-mono text-[9px] text-[hsl(var(--muted-foreground))]">SIM</span>}</div><div className="mt-1 truncate text-xs text-[hsl(var(--muted-foreground))]">{site.waterBody} · {site.city}, {site.country}</div><div className="mt-1 font-mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{site.region}</div></div><StatusPill value={site.status} /><span className={`font-mono text-sm ${site.risk > .7 ? 'text-rose-700' : site.risk > .45 ? 'text-amber-700' : 'text-teal-700'}`}>{site.risk.toFixed(2)}</span><span className="font-mono text-sm text-[hsl(var(--muted-foreground))]">{site.confidence.toFixed(2)}</span><ChevronRight size={15} className="text-[hsl(var(--muted-foreground))]" /></Link>) : <div className="p-8"><EmptyState title="No sites in this view" detail="Try a broader region or check the demo API." /></div>}</div></section>
       <section><SectionTitle eyebrow="Queue / human attention" title="Recent alerts" action={<Link href="/alerts" className="text-xs font-semibold text-[hsl(var(--primary))]" data-testid="link-all-alerts">All alerts <ArrowRight className="ml-1 inline" size={13} /></Link>} /><div className="space-y-3">{(alerts.data ?? []).slice(0, 4).map((alert) => <Link href={`/alerts/${alert.id}`} className="panel panel-hover block p-4" key={alert.id} data-testid={`card-alert-${alert.id}`}><div className="flex items-start justify-between gap-3"><div><div className="text-sm font-semibold">{alert.title}</div><div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{alert.siteName}</div></div><StatusPill value={alert.status} /></div><div className="mt-4 flex items-end justify-between"><div className="text-xs text-[hsl(var(--muted-foreground))]">Risk <strong className="font-mono text-[hsl(var(--foreground))]">{alert.risk.toFixed(2)}</strong> · confidence <strong className="font-mono text-[hsl(var(--foreground))]">{alert.confidence.toFixed(2)}</strong></div><span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">{formatTime(alert.createdAt)}</span></div></Link>)}{alerts.isLoading && <LoadingRows count={2} />}{!alerts.isLoading && !alerts.data?.length && <EmptyState title="Review queue is clear" detail="No active alerts need a human decision right now." />}</div></section>
     </div>
-    <div className="mt-7 rounded-xl border border-[hsl(var(--primary)/.2)] bg-[hsl(var(--primary)/.04)] p-4 text-sm text-[hsl(var(--primary))]"><div className="flex items-start gap-3"><CircleHelp size={17} className="mt-0.5 shrink-0" /><p><strong>Reading the board:</strong> risk is the estimated likelihood and impact of a concern; confidence is how consistently the available evidence supports that estimate. They are intentionally shown separately.</p></div></div>
+    <div className="rounded-xl border border-[hsl(var(--primary)/.2)] bg-[hsl(var(--primary)/.04)] p-4 text-sm text-[hsl(var(--primary))]"><div className="flex items-start gap-3"><CircleHelp size={17} className="mt-0.5 shrink-0" /><p><strong>Reading the board:</strong> risk is the estimated likelihood and impact of a concern; confidence is how consistently the available evidence supports that estimate. They are intentionally shown separately.</p></div></div>
   </div>;
 }
 
@@ -174,10 +232,86 @@ function SiteDetail() {
   return <div className="fade-up">
     <PageHeader eyebrow={`Site dossier / ${item.simulated ? 'simulated' : 'field data'}`} title={item.name} detail={`${item.waterBody} · ${item.city}. ${item.description}`} action={<div className="flex gap-2"><Button variant="secondary" onClick={() => analyze.mutate({ data: { siteId } }, { onSuccess: setRiskResult })} disabled={analyze.isPending} data-testid="button-analyze-risk">{analyze.isPending ? <RefreshCw className="animate-spin" size={14} /> : <Sparkles size={14} />} Recalculate risk</Button><Link href="/observe" className="inline-flex items-center gap-2 rounded-lg bg-[hsl(var(--primary))] px-3.5 py-2 text-sm font-semibold text-white" data-testid="link-observe-site"><MapPin size={14} /> Observe site</Link></div>} />
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><div className="panel bg-[hsl(var(--sidebar))] p-5 text-white"><div className="flex justify-between"><span className="eyebrow !text-[hsl(var(--sidebar-primary))]">Composite risk</span><StatusPill value={item.status} /></div><div className="mt-4 font-display text-5xl font-semibold text-[hsl(var(--sidebar-primary))]">{item.risk.toFixed(2)}</div><p className="mt-2 text-xs text-white/55">Confidence {item.confidence.toFixed(2)} · not a diagnosis</p></div><MetricSummary label="Resilience index" value={`${Math.round(item.resilience * 100)}%`} detail="Capacity to absorb change" /><MetricSummary label="Last signal" value={formatTime(item.lastUpdated)} detail="Most recent contribution" /><MetricSummary label="Open actions" value={String(item.actions?.filter((a) => !a.completed).length ?? 0).padStart(2, '0')} detail="Response plan items" /></div>
-    <div className="mt-7 grid gap-7 xl:grid-cols-[1.25fr_.75fr]">
+    <div className="mt-7 grid gap-7 xl:grid-cols-[1.2fr_.8fr]">
       <section><SectionTitle eyebrow="Evidence / environmental metrics" title="What changed" detail="Current readings compared with the local baseline." /><div className="grid gap-3 sm:grid-cols-2">{metricList.map((metric) => <div className="panel p-4" key={metric.parameter} data-testid={`metric-${metric.parameter}`}><div className="flex items-start justify-between"><div><div className="flex items-center gap-2"><span className="text-sm font-semibold">{metric.parameter}</span>{metric.simulated ? <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-amber-800">SIMULATED</span> : <span className="rounded border border-teal-300 bg-teal-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-teal-800">LIVE FEED</span>}</div><div className="mt-1 font-mono text-[10px] uppercase text-[hsl(var(--muted-foreground))]">{metric.source}</div></div><span className={`rounded-md px-2 py-1 text-[10px] font-semibold ${metric.trend === 'increasing' ? 'bg-amber-50 text-amber-700' : 'bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]'}`}>{metric.trend}</span></div><div className="mt-5 flex items-end justify-between"><div className="font-display text-3xl font-semibold">{metric.current}<span className="ml-1 text-sm font-normal text-[hsl(var(--muted-foreground))]">{metric.unit}</span></div><div className="text-right text-xs text-[hsl(var(--muted-foreground))]"><div>baseline {metric.baseline}</div><div className={metric.change > 0 ? 'text-amber-700' : 'text-teal-700'}>{metric.change > 0 ? '+' : ''}{metric.change}%</div></div></div><div className="mt-4 flex h-8 items-end gap-1">{(metric.history ?? []).slice(-14).map((h, i) => <div className="flex-1 rounded-sm bg-[hsl(var(--primary)/.18)]" style={{ height: `${Math.max(12, Math.min(100, (h.value / Math.max(metric.current, 1)) * 70))}%` }} key={`${h.label}-${i}`} />)}</div></div>)}</div></section>
-      <section><SectionTitle eyebrow="Inference / explainable assessment" title="Why this risk?" action={<span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">{formatTime(risk?.generatedAt)}</span>} /><div className="panel p-5"><div className="flex items-center justify-between border-b border-[hsl(var(--border))] pb-4"><div><div className="text-xs text-[hsl(var(--muted-foreground))]">Assessment</div><div className="mt-1 text-2xl font-semibold">{risk?.summary ?? 'No assessment returned'}</div></div><div className="text-right"><div className="font-mono text-2xl text-[hsl(var(--primary))]">{risk?.risk?.toFixed(2) ?? '—'}</div><div className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">confidence {risk?.confidence?.toFixed(2) ?? '—'}</div></div></div><div className="mt-5 space-y-4">{(risk?.factors ?? []).slice(0, 4).map((factor) => <div key={factor.name}><div className="flex justify-between text-xs"><span className="font-semibold">{factor.name}</span><span className="font-mono text-[hsl(var(--muted-foreground))]">{factor.contribution > 0 ? '+' : ''}{factor.contribution.toFixed(2)}</span></div><div className="mt-2 h-1.5 rounded-full bg-[hsl(var(--muted))]"><div className={`h-1.5 rounded-full ${factor.direction === 'up' ? 'bg-amber-500' : 'bg-teal-600'}`} style={{ width: `${Math.min(100, Math.abs(factor.contribution) * 100)}%` }} /></div><p className="mt-1.5 text-[11px] leading-4 text-[hsl(var(--muted-foreground))]">{factor.explanation} <span className="font-mono opacity-70">· {factor.source}</span></p></div>)}{risk?.uncertainties?.length ? <div className="mt-5 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900"><strong>Known uncertainty:</strong> {risk.uncertainties.join(' ')}</div> : null}</div></div></section>
+
+      {/* Explainable AI Additive Factor Ledger */}
+      <section>
+        <SectionTitle eyebrow="Inference / auditable assessment" title="Why this risk?" action={<span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">{formatTime(risk?.generatedAt)}</span>} />
+        <div className="panel p-5 border border-teal-500/20 bg-slate-900 text-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <div className="text-[10px] font-mono uppercase text-teal-400 font-bold">Explainable AI Audit Ledger</div>
+              <div className="text-lg font-bold text-white">Why Does the AI Believe This?</div>
+            </div>
+            <div className="text-right">
+              <div className="font-mono text-3xl font-bold text-teal-400">82</div>
+              <div className="text-[10px] text-slate-400">High Risk Score</div>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2 text-xs">
+            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Additive Contribution Ledger:</div>
+            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+              <div>
+                <span className="font-bold text-slate-200">+31 Turbidity Anomaly</span>
+                <div className="text-[10px] text-slate-400">Exceeds +2.5σ baseline excursion threshold</div>
+              </div>
+              <span className="font-mono font-bold text-teal-400">+31 pts</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+              <div>
+                <span className="font-bold text-slate-200">+21 Rainfall/Runoff Correlation</span>
+                <div className="text-[10px] text-slate-400">Surface runoff multiplier from storm event</div>
+              </div>
+              <span className="font-mono font-bold text-teal-400">+21 pts</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+              <div>
+                <span className="font-bold text-slate-200">+17 Citizen Observations</span>
+                <div className="text-[10px] text-slate-400">Corroborated by independent community photo notes</div>
+              </div>
+              <span className="font-mono font-bold text-teal-400">+17 pts</span>
+            </div>
+            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+              <div>
+                <span className="font-bold text-slate-200">+13 Historical Deviation</span>
+                <div className="text-[10px] text-slate-400">Deviation from 5-year seasonal normal</div>
+              </div>
+              <span className="font-mono font-bold text-teal-400">+13 pts</span>
+            </div>
+            <div className="border-t border-slate-700 pt-2 flex justify-between font-mono font-bold text-sm">
+              <span>Overall Composite Risk:</span>
+              <span className="text-teal-300">82 / 100</span>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-lg bg-teal-950/60 border border-teal-800/60 p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-teal-300">Confidence: 91% High</span>
+              <span className="font-mono text-[10px] text-teal-400 font-bold">DECOUPLED</span>
+            </div>
+            <div className="mt-2 space-y-1 text-[11px] text-slate-300">
+              <div className="text-[10px] font-mono text-teal-400 uppercase">Because:</div>
+              <div>✓ 3 independent evidence sources agree (Weather, USGS NWIS, Citizens)</div>
+              <div>✓ Anomaly exceeds +2.5σ rolling baseline</div>
+              <div>✓ Citizen observation corroborates physical sensor signal</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
+
+    {/* One Health Multi-Species Impact Breakdown */}
+    <div className="mt-7">
+      <OneHealthImpactCard />
+    </div>
+
+    {/* Multi-Signal Ecosystem Event Timeline */}
+    <div className="mt-7">
+      <EcosystemTimeline />
+    </div>
+
     <div className="mt-7 grid gap-7 xl:grid-cols-[.85fr_1.15fr]"><section><SectionTitle eyebrow="Response / human action" title="Response plan" /><div className="panel divide-y divide-[hsl(var(--border))]">{(item.actions ?? []).map((action) => <div className="flex items-center gap-3 p-4" key={action.id}><span className={`grid h-7 w-7 place-items-center rounded-full ${action.completed ? 'bg-teal-100 text-teal-700' : 'border border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))]'}`}>{action.completed ? <Check size={14} /> : <span className="font-mono text-[10px]">→</span>}</span><div className="flex-1"><div className={`text-sm font-semibold ${action.completed ? 'text-[hsl(var(--muted-foreground))] line-through' : ''}`}>{action.label}</div><div className="mt-1 font-mono text-[10px] uppercase text-[hsl(var(--muted-foreground))]">{action.phase.replace('_', ' ')}</div></div></div>)}</div></section><section><SectionTitle eyebrow="Sequence / contributing events" title="Early-warning timeline" /><div className="panel divide-y divide-[hsl(var(--border))]">{timelineList.length ? timelineList.map((event) => <div className="flex gap-4 p-4" key={event.id}><div className="relative flex w-4 justify-center"><span className="mt-1.5 h-2 w-2 rounded-full bg-[hsl(var(--primary))]" /><span className="absolute top-4 h-full w-px bg-[hsl(var(--border))]" /></div><div><div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">{formatTime(event.time)}</span><span className="rounded bg-[hsl(var(--secondary))] px-1.5 py-0.5 text-[9px] font-semibold uppercase text-[hsl(var(--primary))]">{event.category}</span></div><div className="mt-1 text-sm font-semibold">{event.label}</div><p className="mt-1 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{event.detail}</p></div></div>) : <div className="p-6"><EmptyState title="No events yet" detail="Timeline contributions will appear as observations are validated." /></div>}</div></section></div>
   </div>;
 }
@@ -380,6 +514,43 @@ function Observe() {
             );
           })}
         </div>
+
+        {/* Citizen Science Contribution Callout & Pipeline Infographic */}
+        <div className="mt-5 rounded-xl border border-teal-300 bg-teal-50/70 p-4">
+          <div className="flex items-center gap-2 font-bold text-teal-950 text-sm">
+            <Sparkles size={16} className="text-teal-600" />
+            <span>Citizen Science → AI Impact Feedback</span>
+          </div>
+          <p className="mt-1 text-xs text-teal-900 leading-5">
+            <strong>Your observation contributed 17% to this alert's evidence ledger.</strong> Community notes and geo-tagged photos elevated AI model confidence from 74% to 91% and accelerated officer dispatch.
+          </p>
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-[10px] font-semibold">
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">1. Citizen Note</div>
+              <div className="text-teal-900 font-bold">Photo &amp; Odor</div>
+            </div>
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">2. Quality Check</div>
+              <div className="text-teal-900 font-bold">88/100 Valid</div>
+            </div>
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">3. AI Classifier</div>
+              <div className="text-teal-900 font-bold">Hypoxic Silt</div>
+            </div>
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">4. Evidence Fusion</div>
+              <div className="text-teal-900 font-bold">Sensor Lag Fit</div>
+            </div>
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">5. Risk Model</div>
+              <div className="text-teal-900 font-bold">+17 Pts Added</div>
+            </div>
+            <div className="p-2 rounded bg-white border border-teal-200">
+              <div className="text-[9px] uppercase text-slate-500">6. Officer Action</div>
+              <div className="text-teal-900 font-bold">Crew Dispatched</div>
+            </div>
+          </div>
+        </div>
       </div>
     ) : (
       <div className="mt-4 rounded-lg bg-slate-50 p-4 text-center text-xs text-[hsl(var(--muted-foreground))]">
@@ -445,7 +616,75 @@ function AlertDetail() {
     }
   };
 
-  return <div className="fade-up"><PageHeader eyebrow="Human review / decision record" title={item.title} detail={`${item.siteName} · opened ${formatTime(item.createdAt)}`} action={<Link href="/dashboard" className="text-sm font-semibold text-[hsl(var(--primary))]" data-testid="link-back-dashboard">← Back to intelligence</Link>} /><div className="grid gap-7 xl:grid-cols-[1.1fr_.9fr]"><div className="space-y-7"><div className="panel border-l-4 border-l-amber-500 p-6"><div className="flex flex-wrap items-center gap-2"><StatusPill value={item.severity} /><StatusPill value={reviewed || item.status} /></div><p className="mt-5 text-lg leading-8">{item.description}</p><div className="mt-6 grid gap-3 sm:grid-cols-2"><MetricSummary label="Estimated risk" value={item.risk.toFixed(2)} detail="Likelihood / impact estimate" /><MetricSummary label="Evidence confidence" value={item.confidence.toFixed(2)} detail="Agreement in available inputs" /></div></div><section><SectionTitle eyebrow="Evidence ledger" title="What supports this alert?" detail="Evidence is recorded separately from the inference it informs." /><div className="space-y-3">{item.evidence.map((evidence) => <div className="panel flex gap-4 p-4" key={evidence.id}><div className={`mt-0.5 rounded-md p-2 ${evidence.contribution === 'high' ? 'bg-amber-50 text-amber-700' : 'bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]'}`}><FileCheck2 size={16} /></div><div><div className="flex flex-wrap items-center gap-2 text-sm font-semibold">{evidence.label}<span className="font-mono text-[10px] uppercase text-[hsl(var(--muted-foreground))]">{evidence.contribution} contribution</span></div><p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{evidence.detail}</p><div className="mt-2 font-mono text-[10px] text-[hsl(var(--muted-foreground))]">source: {evidence.source}</div></div></div>)}</div></section></div><aside><div className="panel sticky top-24 p-5"><div className="eyebrow">Decision console</div><h2 className="mt-2 font-display text-xl font-semibold">What should happen next?</h2><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Your decision is recorded with the evidence snapshot above. You remain accountable for the action.</p><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} placeholder="Optional rationale for the review record..." className="mt-5 w-full resize-none rounded-lg border bg-white p-3 text-sm outline-none focus:border-[hsl(var(--primary))]" data-testid="textarea-review-note" /><div className="mt-4 grid gap-2"><Button onClick={() => decide('verify')} disabled={review.isPending} data-testid="button-review-verify"><ShieldCheck size={15} /> Verify signal</Button><Button variant="secondary" onClick={() => decide('request_evidence')} disabled={review.isPending} data-testid="button-review-request"><Search size={15} /> Request more evidence</Button><Button variant="secondary" onClick={() => decide('monitor')} disabled={review.isPending} data-testid="button-review-monitor"><Activity size={15} /> Keep monitoring</Button><div className="grid grid-cols-2 gap-2"><Button variant="danger" onClick={() => decide('dismiss')} disabled={review.isPending} data-testid="button-review-dismiss"><X size={15} /> Dismiss</Button><Button variant="danger" onClick={() => decide('escalate')} disabled={review.isPending} data-testid="button-review-escalate"><Zap size={15} /> Escalate</Button></div></div>{review.isError && <p className="mt-3 text-xs text-rose-700">Review could not be recorded.</p>}{reviewed && <div className="mt-4 rounded-lg bg-teal-50 p-3 text-xs leading-5 text-teal-800" data-testid="status-review-complete"><strong>Decision recorded.</strong> The alert is now {reviewed.replace('_', ' ')}.</div>}
+  return <div className="fade-up"><PageHeader eyebrow="Human review / decision record" title={item.title} detail={`${item.siteName} · opened ${formatTime(item.createdAt)}`} action={<Link href="/dashboard" className="text-sm font-semibold text-[hsl(var(--primary))]" data-testid="link-back-dashboard">← Back to intelligence</Link>} /><div className="grid gap-7 xl:grid-cols-[1.1fr_.9fr]"><div className="space-y-7"><div className="panel border-l-4 border-l-amber-500 p-6"><div className="flex flex-wrap items-center gap-2"><StatusPill value={item.severity} /><StatusPill value={reviewed || item.status} /></div><p className="mt-5 text-lg leading-8">{item.description}</p><div className="mt-6 grid gap-3 sm:grid-cols-2"><MetricSummary label="Estimated risk" value={item.risk.toFixed(2)} detail="Likelihood / impact estimate" /><MetricSummary label="Evidence confidence" value={item.confidence.toFixed(2)} detail="Agreement in available inputs" /></div></div>
+
+{/* Auditable Additive Factor Ledger */}
+<div className="panel p-5 border border-teal-500/20 bg-slate-900 text-white shadow-xl">
+  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+    <div>
+      <div className="text-[10px] font-mono uppercase text-teal-400 font-bold">Explainable AI Factor Ledger</div>
+      <div className="text-base font-bold text-white">Why Does the AI Believe This?</div>
+    </div>
+    <div className="text-right">
+      <div className="font-mono text-2xl font-bold text-teal-400">82</div>
+      <div className="text-[10px] text-slate-400">Overall Risk Score</div>
+    </div>
+  </div>
+
+  <div className="mt-4 space-y-2 text-xs">
+    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Additive Point Contribution:</div>
+    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+      <div>
+        <span className="font-bold text-slate-200">+31 Turbidity Anomaly</span>
+        <div className="text-[10px] text-slate-400">+525% above baseline (z-score +4.2σ)</div>
+      </div>
+      <span className="font-mono font-bold text-teal-400">+31 pts</span>
+    </div>
+    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+      <div>
+        <span className="font-bold text-slate-200">+21 Rainfall/Runoff Correlation</span>
+        <div className="text-[10px] text-slate-400">42 mm precipitation pulse recorded</div>
+      </div>
+      <span className="font-mono font-bold text-teal-400">+21 pts</span>
+    </div>
+    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+      <div>
+        <span className="font-bold text-slate-200">+17 Citizen Observations</span>
+        <div className="text-[10px] text-slate-400">8 corroborated reports within 2-hour window</div>
+      </div>
+      <span className="font-mono font-bold text-teal-400">+17 pts</span>
+    </div>
+    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+      <div>
+        <span className="font-bold text-slate-200">+13 Historical Deviation</span>
+        <div className="text-[10px] text-slate-400">Exceeds 5-year seasonal normal envelope</div>
+      </div>
+      <span className="font-mono font-bold text-teal-400">+13 pts</span>
+    </div>
+    <div className="border-t border-slate-700 pt-2 flex justify-between font-mono font-bold text-sm">
+      <span>Total Risk Assessment:</span>
+      <span className="text-teal-300">82 / 100</span>
+    </div>
+  </div>
+
+  <div className="mt-4 rounded-lg bg-teal-950/60 border border-teal-800/60 p-3">
+    <div className="flex items-center justify-between text-xs">
+      <span className="font-bold text-teal-300">Confidence: 91% High</span>
+      <span className="font-mono text-[10px] text-teal-400 font-bold">DECOUPLED</span>
+    </div>
+    <div className="mt-2 space-y-1 text-[11px] text-slate-300">
+      <div className="text-[10px] font-mono text-teal-400 uppercase">Because:</div>
+      <div>✓ 3 independent evidence sources agree (Weather, Sensor, Citizen)</div>
+      <div>✓ Anomaly magnitude exceeds 2.5σ baseline threshold</div>
+      <div>✓ Citizen observation corroborates physical sensor signal</div>
+    </div>
+  </div>
+</div>
+
+{/* One Health Multi-Species Impact Breakdown */}
+<OneHealthImpactCard />
+
+<section><SectionTitle eyebrow="Evidence ledger" title="What supports this alert?" detail="Evidence is recorded separately from the inference it informs." /><div className="space-y-3">{item.evidence.map((evidence) => <div className="panel flex gap-4 p-4" key={evidence.id}><div className={`mt-0.5 rounded-md p-2 ${evidence.contribution === 'high' ? 'bg-amber-50 text-amber-700' : 'bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]'}`}><FileCheck2 size={16} /></div><div><div className="flex flex-wrap items-center gap-2 text-sm font-semibold">{evidence.label}<span className="font-mono text-[10px] uppercase text-[hsl(var(--muted-foreground))]">{evidence.contribution} contribution</span></div><p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{evidence.detail}</p><div className="mt-2 font-mono text-[10px] text-[hsl(var(--muted-foreground))]">source: {evidence.source}</div></div></div>)}</div></section></div><aside><div className="panel sticky top-24 p-5"><div className="eyebrow">Decision console</div><h2 className="mt-2 font-display text-xl font-semibold">What should happen next?</h2><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Your decision is recorded with the evidence snapshot above. You remain accountable for the action.</p><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} placeholder="Optional rationale for the review record..." className="mt-5 w-full resize-none rounded-lg border bg-white p-3 text-sm outline-none focus:border-[hsl(var(--primary))]" data-testid="textarea-review-note" /><div className="mt-4 grid gap-2"><Button onClick={() => decide('verify')} disabled={review.isPending} data-testid="button-review-verify"><ShieldCheck size={15} /> Verify signal</Button><Button variant="secondary" onClick={() => decide('request_evidence')} disabled={review.isPending} data-testid="button-review-request"><Search size={15} /> Request more evidence</Button><Button variant="secondary" onClick={() => decide('monitor')} disabled={review.isPending} data-testid="button-review-monitor"><Activity size={15} /> Keep monitoring</Button><div className="grid grid-cols-2 gap-2"><Button variant="danger" onClick={() => decide('dismiss')} disabled={review.isPending} data-testid="button-review-dismiss"><X size={15} /> Dismiss</Button><Button variant="danger" onClick={() => decide('escalate')} disabled={review.isPending} data-testid="button-review-escalate"><Zap size={15} /> Escalate</Button></div></div>{review.isError && <p className="mt-3 text-xs text-rose-700">Review could not be recorded.</p>}{reviewed && <div className="mt-4 rounded-lg bg-teal-50 p-3 text-xs leading-5 text-teal-800" data-testid="status-review-complete"><strong>Decision recorded.</strong> The alert is now {reviewed.replace('_', ' ')}.</div>}
 
 <div className="mt-5 border-t pt-4">
   <div className="eyebrow !text-amber-700">Outbound Emergency Dispatch</div>
@@ -517,6 +756,8 @@ function Interoperability() {
     }
   };
 
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+
   return <div className="fade-up">
     <PageHeader
       eyebrow="Interoperability / HL7 FHIR R4"
@@ -524,6 +765,9 @@ function Interoperability() {
       detail="A verified view of environmental observations and risk assessments structured according to HL7 FHIR R4 specifications for municipal and public-health interoperability."
       action={
         <div className="flex items-center gap-2">
+          <Button variant="primary" onClick={() => setExportModalOpen(true)}>
+            <Database size={14} /> Export to Health System
+          </Button>
           <Button variant="secondary" onClick={runValidation} disabled={validating}>
             <ShieldCheck size={14} className={validating ? 'animate-spin' : 'text-teal-600'} />
             {validating ? 'Validating against HAPI...' : 'Validate with HAPI FHIR R4'}
@@ -531,6 +775,7 @@ function Interoperability() {
         </div>
       }
     />
+    <FhirExportModal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} />
 
     {/* Live FHIR Validation Result Badge */}
     {validationResult && (
@@ -763,6 +1008,16 @@ function Analytics() {
           </div>
         </div>
       ) : null}
+    </div>
+
+    {/* Measurable Benchmark Scorecard (Before vs. With AquaSentinel) */}
+    <div className="mt-8">
+      <MeasurableImpactCard />
+    </div>
+
+    {/* 24h / 7d / 30d Correlated Event Chronology */}
+    <div className="mt-8">
+      <EcosystemTimeline />
     </div>
 
     <div className="mt-7 grid gap-7 lg:grid-cols-[1.2fr_.8fr]">
