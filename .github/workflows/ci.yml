@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Build, Typecheck & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run Typecheck
+        run: pnpm run typecheck
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Run Automated Test Suite
+        run: pnpm test
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/aquasentinel"

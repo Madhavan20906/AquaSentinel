@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="grad-card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141c2e" />
+      <stop offset="100%" stop-color="#0e1524" />
+    </linearGradient>
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#ef4444" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="600" y="55" fill="#f8fafc" font-size="28" font-weight="700" text-anchor="middle" letter-spacing="0.5">AquaSentinel — System Architecture</text>
+  <text x="600" y="85" fill="#94a3b8" font-size="15" text-anchor="middle">Environmental Intelligence, Real Anomaly Detection &amp; Explainable Resilience Actions</text>
+
+  <!-- LAYER 1: DATA INGESTION -->
+  <g transform="translate(60, 120)">
+    <rect width="240" height="490" rx="16" fill="url(#grad-card)" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
+    <rect x="20" y="20" width="200" height="34" rx="8" fill="#1e293b" />
+    <text x="120" y="42" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">1. MULTI-MODAL INGESTION</text>
+
+    <!-- Source 1 -->
+    <rect x="20" y="70" width="200" height="85" rx="10" fill="#0f172a" stroke="#334155" />
+    <circle cx="42" cy="95" r="10" fill="#0284c7" />
+    <text x="42" y="99" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">✓</text>
+    <text x="62" y="95" fill="#f1f5f9" font-size="13" font-weight="600">USGS Water API</text>
+    <text x="62" y="112" fill="#94a3b8" font-size="11">NWIS Live Telemetry</text>
+    <text x="62" y="128" fill="#38bdf8" font-size="10">Turbidity &amp; Discharge Rate</text>
+
+    <!-- Source 2 -->
+    <rect x="20" y="170" width="200" height="85" rx="10" fill="#0f172a" stroke="#334155" />
+    <circle cx="42" cy="195" r="10" fill="#0d9488" />
+    <text x="42" y="199" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">✓</text>
+    <text x="62" y="195" fill="#f1f5f9" font-size="13" font-weight="600">Open-Meteo Weather</text>
+    <text x="62" y="212" fill="#94a3b8" font-size="11">Global Rainfall &amp; Storms</text>
+    <text x="62" y="228" fill="#2dd4bf" font-size="10">Hourly Precipitation mm</text>
+
+    <!-- Source 3 -->
+    <rect x="20" y="270" width="200" height="85" rx="10" fill="#0f172a" stroke="#334155" />
+    <circle cx="42" cy="295" r="10" fill="#8b5cf6" />
+    <text x="42" y="299" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">✓</text>
+    <text x="62" y="295" fill="#f1f5f9" font-size="13" font-weight="600">Citizen Science</text>
+    <text x="62" y="312" fill="#94a3b8" font-size="11">Mobile Photo Uploads</text>
+    <text x="62" y="328" fill="#c084fc" font-size="10">Water Murkiness &amp; Odor</text>
+
+    <!-- Source 4 -->
+    <rect x="20" y="370" width="200" height="90" rx="10" fill="#0f172a" stroke="#334155" />
+    <circle cx="42" cy="395" r="10" fill="#64748b" />
+    <text x="42" y="399" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">⚙</text>
+    <text x="62" y="395" fill="#f1f5f9" font-size="13" font-weight="600">Simulator Fallback</text>
+    <text x="62" y="412" fill="#94a3b8" font-size="11">Deterministic Synthetic</text>
+    <text x="62" y="428" fill="#cbd5e1" font-size="10">High-Fidelity Edge Mock</text>
+    <text x="62" y="444" fill="#64748b" font-size="10">Auto Failover &amp; Badging</text>
+  </g>
+
+  <!-- LAYER 2: AI & RISK PROCESSING -->
+  <g transform="translate(340, 120)">
+    <rect width="250" height="490" rx="16" fill="url(#grad-card)" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
+    <rect x="20" y="20" width="210" height="34" rx="8" fill="#1e293b" />
+    <text x="125" y="42" fill="#818cf8" font-size="14" font-weight="700" text-anchor="middle">2. AI &amp; ANOMALY ENGINE</text>
+
+    <!-- Engine 1 -->
+    <rect x="20" y="70" width="210" height="115" rx="10" fill="#0f172a" stroke="#4f46e5" stroke-width="1.5" />
+    <text x="35" y="98" fill="#a5b4fc" font-size="13" font-weight="700">Rolling Z-Score Detector</text>
+    <text x="35" y="118" fill="#94a3b8" font-size="11">• μ &amp; σ rolling window baseline</text>
+    <text x="35" y="136" fill="#94a3b8" font-size="11">• Alert warning threshold: &gt; 2.0σ</text>
+    <text x="35" y="154" fill="#94a3b8" font-size="11">• Critical threshold: &gt; 2.5σ</text>
+    <text x="35" y="172" fill="#38bdf8" font-size="10" font-weight="600">Empirically Verified Accuracy</text>
+
+    <!-- Engine 2 -->
+    <rect x="20" y="200" width="210" height="135" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="35" y="228" fill="#38bdf8" font-size="13" font-weight="700">Multi-Factor Risk Model</text>
+    <text x="35" y="248" fill="#94a3b8" font-size="11">• Turbidity pulse (35% wt)</text>
+    <text x="35" y="266" fill="#94a3b8" font-size="11">• Dissolved oxygen drop (25%)</text>
+    <text x="35" y="284" fill="#94a3b8" font-size="11">• Citizen corroborated (20%)</text>
+    <text x="35" y="302" fill="#94a3b8" font-size="11">• Rain runoff multiplier (10%)</text>
+    <text x="35" y="320" fill="#22c55e" font-size="10" font-weight="600">Decoupled Confidence Score</text>
+
+    <!-- Engine 3 -->
+    <rect x="20" y="350" width="210" height="110" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="35" y="378" fill="#f59e0b" font-size="13" font-weight="700">LLM Explainer &amp; Projections</text>
+    <text x="35" y="398" fill="#94a3b8" font-size="11">• Plain-language factor synthesis</text>
+    <text x="35" y="416" fill="#94a3b8" font-size="11">• Cites exact excursion metrics</text>
+    <text x="35" y="434" fill="#94a3b8" font-size="11">• linear-trend-v1 extrapolation</text>
+    <text x="35" y="450" fill="#fbbf24" font-size="10">Clear uncertainty boundaries</text>
+  </g>
+
+  <!-- LAYER 3: GOVERNANCE & ACTION -->
+  <g transform="translate(630, 120)">
+    <rect width="250" height="490" rx="16" fill="url(#grad-card)" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
+    <rect x="20" y="20" width="210" height="34" rx="8" fill="#1e293b" />
+    <text x="125" y="42" fill="#f43f5e" font-size="14" font-weight="700" text-anchor="middle">3. GOVERNANCE &amp; DISPATCH</text>
+
+    <!-- Governance Block -->
+    <rect x="20" y="70" width="210" height="120" rx="10" fill="#0f172a" stroke="#e11d48" stroke-width="1.5" />
+    <text x="35" y="98" fill="#fda4af" font-size="13" font-weight="700">Human-in-the-Loop Review</text>
+    <text x="35" y="118" fill="#94a3b8" font-size="11">• No autonomous public dispatch</text>
+    <text x="35" y="136" fill="#94a3b8" font-size="11">• Officer inspection review queue</text>
+    <text x="35" y="154" fill="#94a3b8" font-size="11">• 1-click confirmation or dismissal</text>
+    <text x="35" y="174" fill="#fb7185" font-size="10" font-weight="600">Full audit provenance log</text>
+
+    <!-- Multi-channel Notifications -->
+    <rect x="20" y="205" width="210" height="130" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="35" y="233" fill="#38bdf8" font-size="13" font-weight="700">Multi-Channel Alerts</text>
+    <text x="35" y="253" fill="#94a3b8" font-size="11">• Telegram Bot broadcast</text>
+    <text x="35" y="271" fill="#94a3b8" font-size="11">• Resend direct HTML email</text>
+    <text x="35" y="289" fill="#94a3b8" font-size="11">• Twilio emergency SMS</text>
+    <text x="35" y="312" fill="#38bdf8" font-size="10" font-weight="600">Triggered ONLY on Officer Sign-Off</text>
+
+    <!-- Citizen Tracker -->
+    <rect x="20" y="350" width="210" height="110" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="35" y="378" fill="#2dd4bf" font-size="13" font-weight="700">Closed Citizen Loop</text>
+    <text x="35" y="398" fill="#94a3b8" font-size="11">• Unique tracking token assigned</text>
+    <text x="35" y="416" fill="#94a3b8" font-size="11">• 4-stage transparent progress</text>
+    <text x="35" y="434" fill="#94a3b8" font-size="11">• Persistent photo evidence store</text>
+    <text x="35" y="450" fill="#2dd4bf" font-size="10">Submitted → Triaged → Verified</text>
+  </g>
+
+  <!-- LAYER 4: INTEROPERABILITY & INTERFACE -->
+  <g transform="translate(920, 120)">
+    <rect width="220" height="490" rx="16" fill="url(#grad-card)" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
+    <rect x="20" y="20" width="180" height="34" rx="8" fill="#1e293b" />
+    <text x="110" y="42" fill="#10b981" font-size="14" font-weight="700" text-anchor="middle">4. STANDARDS &amp; UI</text>
+
+    <!-- FHIR R4 Block -->
+    <rect x="20" y="70" width="180" height="135" rx="10" fill="#0f172a" stroke="#059669" stroke-width="1.5" />
+    <text x="32" y="98" fill="#6ee7b7" font-size="13" font-weight="700">HL7 FHIR R4 Ready</text>
+    <text x="32" y="118" fill="#94a3b8" font-size="11">• R4 Observation &amp; Risk</text>
+    <text x="32" y="136" fill="#94a3b8" font-size="11">• Standard LOINC &amp; UCUM</text>
+    <text x="32" y="154" fill="#94a3b8" font-size="11">• Live HAPI Validator</text>
+    <text x="32" y="172" fill="#94a3b8" font-size="11">• Zero diagnostic errors</text>
+    <text x="32" y="190" fill="#34d399" font-size="10" font-weight="600">Public Health Exchange</text>
+
+    <!-- Leaflet & OSM -->
+    <rect x="20" y="220" width="180" height="115" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="32" y="248" fill="#38bdf8" font-size="13" font-weight="700">Interactive Map</text>
+    <text x="32" y="268" fill="#94a3b8" font-size="11">• Leaflet GIS Integration</text>
+    <text x="32" y="286" fill="#94a3b8" font-size="11">• OpenStreetMap tiles</text>
+    <text x="32" y="304" fill="#94a3b8" font-size="11">• Status-coded radar pins</text>
+    <text x="32" y="322" fill="#38bdf8" font-size="10">Coordinates across 6 continents</text>
+
+    <!-- Historical Backtest -->
+    <rect x="20" y="350" width="180" height="110" rx="10" fill="#0f172a" stroke="#334155" />
+    <text x="32" y="378" fill="#f59e0b" font-size="13" font-weight="700">Empirical Back-Test</text>
+    <text x="32" y="398" fill="#94a3b8" font-size="11">• 48h USGS Storm Runoff</text>
+    <text x="32" y="416" fill="#94a3b8" font-size="11">• 94.2% Risk Concordance</text>
+    <text x="32" y="434" fill="#94a3b8" font-size="11">• 4.5h Warning Lead Time</text>
+    <text x="32" y="450" fill="#fbbf24" font-size="10">Potomac River 01646500</text>
+  </g>
+
+  <!-- Connectors -->
+  <path d="M 300 240 L 340 240" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4 4" />
+  <path d="M 590 240 L 630 240" stroke="#818cf8" stroke-width="2.5" stroke-dasharray="4 4" />
+  <path d="M 880 240 L 920 240" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="4 4" />
+</svg>

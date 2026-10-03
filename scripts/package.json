@@ -7,6 +7,7 @@
     "hello": "tsx ./src/hello.ts",
     "validate:scientific": "tsx ./src/validate-water-quality.ts",
     "test:load": "tsx ./src/load-test.ts --run",
+    "test": "tsx ./src/test-suite.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
