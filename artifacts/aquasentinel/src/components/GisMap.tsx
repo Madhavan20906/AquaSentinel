@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { useLocation } from 'wouter';
-import { Activity, CloudRain, Eye, Layers, Maximize2, Thermometer, Wind } from 'lucide-react';
+import { Activity, AlertTriangle, CloudRain, Download, Eye, Layers, Maximize2, ShieldAlert, Thermometer, Waves, Wind } from 'lucide-react';
 
 export interface GisSite {
   id: string;
@@ -29,9 +29,21 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const geoJsonLayersRef = useRef<{
+    basins?: L.GeoJSON;
+    flowlines?: L.GeoJSON;
+    plume?: L.GeoJSON;
+    intakes?: L.LayerGroup;
+  }>({});
+
   const [, setLocation] = useLocation();
 
   const [activeLayer, setActiveLayer] = useState<'osm' | 'topo'>('osm');
+  const [showBasins, setShowBasins] = useState(true);
+  const [showFlowlines, setShowFlowlines] = useState(true);
+  const [showPlume, setShowPlume] = useState(true);
+  const [showIntakes, setShowIntakes] = useState(true);
+
   const [selectedWeather, setSelectedWeather] = useState<{
     siteId: string;
     temperature: number;
@@ -40,13 +52,19 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
     source: string;
     timestamp: string;
   } | null>(null);
-  const [loadingWeather, setLoadingWeather] = useState(false);
 
+  const [activePlume, setActivePlume] = useState<{
+    siteId: string;
+    siteName: string;
+    flowVelocityMs: number;
+    affectedIntakes: any[];
+  } | null>(null);
+
+  // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
-    if (mapInstanceRef.current) return; // already initialized
+    if (mapInstanceRef.current) return;
 
-    // Default center on Chennai / Adyar or global view
     const defaultCenter: L.LatLngExpression = [13.0067, 80.257];
     const map = L.map(mapContainerRef.current, {
       center: defaultCenter,
@@ -61,7 +79,7 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
         ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
-    const tileLayer = L.tileLayer(tileUrl, {
+    L.tileLayer(tileUrl, {
       maxZoom: 19,
       attribution: '© OpenStreetMap contributors',
     }).addTo(map);
@@ -74,12 +92,172 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
     };
   }, []);
 
-  // Update markers when sites change
+  // Fetch and Render Watershed Basins, Flowlines, and Drinking Water Intakes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    fetch('/api/gis/features')
+      .then((res) => res.json())
+      .then((data) => {
+        // 1. Basins GeoJSON
+        if (geoJsonLayersRef.current.basins) {
+          geoJsonLayersRef.current.basins.remove();
+        }
+        if (data.basins && showBasins) {
+          const basinLayer = L.geoJSON(data.basins, {
+            style: (feature) => ({
+              color: feature?.properties?.strokeColor || '#0284c7',
+              weight: 2,
+              fillColor: feature?.properties?.fillColor || '#0ea5e9',
+              fillOpacity: 0.12,
+              dashArray: '4, 4',
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.bindPopup(`
+                <div style="font-family: inherit; font-size: 11px; padding: 4px;">
+                  <strong style="color: #0369a1; text-transform: uppercase;">Watershed Basin</strong>
+                  <div style="font-size: 13px; font-weight: bold; margin-top: 2px;">${feature.properties.name}</div>
+                  <div style="color: #64748b; margin-top: 4px;">Drainage Area: <b>${feature.properties.drainageAreaKm2} km²</b></div>
+                  <div style="color: #64748b;">Soil Type: ${feature.properties.soilType}</div>
+                </div>
+              `);
+            },
+          }).addTo(map);
+          geoJsonLayersRef.current.basins = basinLayer;
+        }
+
+        // 2. Flowlines GeoJSON
+        if (geoJsonLayersRef.current.flowlines) {
+          geoJsonLayersRef.current.flowlines.remove();
+        }
+        if (data.flowlines && showFlowlines) {
+          const flowLayer = L.geoJSON(data.flowlines, {
+            style: (feature) => ({
+              color: feature?.properties?.strokeColor || '#0284c7',
+              weight: feature?.properties?.strokeWidth || 3.5,
+              opacity: 0.85,
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.bindPopup(`
+                <div style="font-family: inherit; font-size: 11px; padding: 4px;">
+                  <strong style="color: #0d9488; text-transform: uppercase;">Hydrographic Reach</strong>
+                  <div style="font-size: 13px; font-weight: bold; margin-top: 2px;">${feature.properties.reachName}</div>
+                  <div style="color: #64748b; margin-top: 4px;">Flow Direction: ${feature.properties.flowDirection}</div>
+                  <div style="color: #64748b;">Velocity: <b>${feature.properties.velocityMs} m/s</b></div>
+                </div>
+              `);
+            },
+          }).addTo(map);
+          geoJsonLayersRef.current.flowlines = flowLayer;
+        }
+
+        // 3. Municipal Drinking Water Intakes
+        if (geoJsonLayersRef.current.intakes) {
+          geoJsonLayersRef.current.intakes.remove();
+        }
+        if (data.intakes && showIntakes) {
+          const intakeGroup = L.layerGroup();
+          data.intakes.forEach((intake: any) => {
+            const intakeIcon = L.divIcon({
+              className: 'custom-intake-pin',
+              html: `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 6px;
+                  background-color: ${intake.status === 'urgent_gate_closure_recommended' ? '#ef4444' : '#0284c7'};
+                  border: 2px solid white;
+                  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+                  color: white;
+                  font-size: 11px;
+                " title="Municipal Water Intake: ${intake.name}">
+                  💧
+                </div>
+              `,
+              iconSize: [24, 24],
+              iconAnchor: [12, 12],
+            });
+
+            const intakeMarker = L.marker([intake.latitude, intake.longitude], { icon: intakeIcon });
+            intakeMarker.bindPopup(`
+              <div style="font-family: inherit; font-size: 11px; padding: 4px;">
+                <span style="background: ${intake.status === 'urgent_gate_closure_recommended' ? '#fee2e2' : '#e0f2fe'}; color: ${intake.status === 'urgent_gate_closure_recommended' ? '#b91c1c' : '#0369a1'}; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">
+                  ${intake.status === 'urgent_gate_closure_recommended' ? '⚠️ URGENT ADVISORY' : 'DRINKING WATER INTAKE'}
+                </span>
+                <div style="font-size: 13px; font-weight: bold; margin-top: 5px; color: #0f172a;">${intake.name}</div>
+                <div style="color: #475569; margin-top: 4px;">Capacity: <b>${intake.capacityMld} MLD</b> · Pop: <b>${(intake.populationServed / 1000).toFixed(0)}k</b></div>
+                <div style="color: #64748b; margin-top: 2px;">Distance from Outfall: <b>${intake.distanceKmFromOutfall} km</b></div>
+                <div style="color: #b91c1c; font-weight: 600; margin-top: 4px;">Plume Arrival ETA: ~${intake.estimatedPlumeArrivalMinutes} mins</div>
+              </div>
+            `);
+            intakeGroup.addLayer(intakeMarker);
+          });
+          intakeGroup.addTo(map);
+          geoJsonLayersRef.current.intakes = intakeGroup;
+        }
+      })
+      .catch((err) => console.error('GIS features load error', err));
+  }, [showBasins, showFlowlines, showIntakes]);
+
+  // Load Plume Dispersion Buffer for target site
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const targetSite = selectedSiteId
+      ? sites.find((s) => s.id === selectedSiteId)
+      : sites.find((s) => s.status === 'critical') || sites[0];
+
+    if (!targetSite) return;
+
+    fetch(`/api/gis/plume/${targetSite.id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((plumeData) => {
+        if (!plumeData) return;
+        setActivePlume({
+          siteId: plumeData.siteId,
+          siteName: plumeData.siteName,
+          flowVelocityMs: plumeData.flowVelocityMs,
+          affectedIntakes: plumeData.affectedIntakes || [],
+        });
+
+        if (geoJsonLayersRef.current.plume) {
+          geoJsonLayersRef.current.plume.remove();
+        }
+
+        if (plumeData.bufferGeoJson && showPlume) {
+          const plumeLayer = L.geoJSON(plumeData.bufferGeoJson, {
+            style: (feature) => ({
+              color: feature?.properties?.strokeColor || '#ef4444',
+              weight: 2,
+              fillColor: feature?.properties?.fillColor || '#ef4444',
+              fillOpacity: feature?.properties?.fillOpacity || 0.35,
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.bindPopup(`
+                <div style="font-family: inherit; font-size: 11px; padding: 4px;">
+                  <strong style="color: #b91c1c;">${feature.properties.name}</strong>
+                  <p style="color: #475569; margin-top: 4px; line-height: 1.4;">${feature.properties.description}</p>
+                  <div style="color: #64748b; margin-top: 4px;">Travel Time: ~${feature.properties.travelTimeMinutes} mins</div>
+                </div>
+              `);
+            },
+          }).addTo(map);
+          geoJsonLayersRef.current.plume = plumeLayer;
+        }
+      })
+      .catch((err) => console.error('Plume calculation error', err));
+  }, [selectedSiteId, sites, showPlume]);
+
+  // Update site markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !sites.length) return;
 
-    // Clear old markers
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current.clear();
 
@@ -141,15 +319,17 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
 
       const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
 
-      // Bind rich popup
       const popupHtml = `
-        <div style="font-family: inherit; min-width: 200px; padding: 4px;">
-          <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600;">${site.waterBody}</div>
-          <div style="font-size: 14px; font-weight: bold; margin-top: 2px; color: #0f172a;">${site.name}</div>
+        <div style="font-family: inherit; min-width: 210px; padding: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600;">${site.waterBody}</span>
+            ${site.simulated ? '<span style="font-size: 9px; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; color: #64748b;">SIM</span>' : '<span style="font-size: 9px; background: #ecfdf5; color: #047857; font-weight: bold; padding: 1px 4px; border-radius: 3px;">LIVE USGS</span>'}
+          </div>
+          <div style="font-size: 14px; font-weight: bold; margin-top: 3px; color: #0f172a;">${site.name}</div>
           <div style="font-size: 12px; color: #475569;">${site.city}, ${site.country}</div>
           <div style="display: flex; gap: 8px; margin-top: 8px; font-size: 11px;">
-            <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Risk: <b>${site.risk.toFixed(2)}</b></span>
-            <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Conf: <b>${site.confidence.toFixed(2)}</b></span>
+            <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Risk: <b>${site.risk.toFixed(0)}/100</b></span>
+            <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Confidence: <b>${site.confidence.toFixed(0)}%</b></span>
           </div>
           <div style="margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between;">
             <a href="/sites/${site.id}" style="color: #0d9488; font-weight: 600; text-decoration: none; font-size: 12px;">Open Dossier →</a>
@@ -172,7 +352,6 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
   }, [sites]);
 
   const fetchWeatherForSite = async (siteId: string) => {
-    setLoadingWeather(true);
     try {
       const res = await fetch(`/api/sites/${siteId}/live-weather`);
       if (res.ok) {
@@ -190,8 +369,6 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
       }
     } catch {
       // ignore
-    } finally {
-      setLoadingWeather(false);
     }
   };
 
@@ -210,16 +387,88 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
       <div className="absolute left-3 top-3 z-[1000] flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-white shadow-md backdrop-blur-md">
           <Layers size={13} className="text-teal-400" />
-          Production GIS View
+          Production GIS Risk Engine
         </span>
+
+        {/* Layer Toggles */}
+        <div className="hidden sm:flex items-center gap-1 rounded-lg border border-slate-700/60 bg-slate-900/80 p-1 text-[11px] text-slate-300">
+          <button
+            onClick={() => setShowBasins(!showBasins)}
+            className={`rounded px-2 py-0.5 transition ${showBasins ? 'bg-sky-900/80 text-sky-200 font-bold' : 'text-slate-400'}`}
+            title="Toggle watershed catchment polygons"
+          >
+            Catchment
+          </button>
+          <button
+            onClick={() => setShowFlowlines(!showFlowlines)}
+            className={`rounded px-2 py-0.5 transition ${showFlowlines ? 'bg-teal-900/80 text-teal-200 font-bold' : 'text-slate-400'}`}
+            title="Toggle hydrographic flowlines"
+          >
+            Flowlines
+          </button>
+          <button
+            onClick={() => setShowPlume(!showPlume)}
+            className={`rounded px-2 py-0.5 transition ${showPlume ? 'bg-rose-900/80 text-rose-200 font-bold' : 'text-slate-400'}`}
+            title="Toggle dynamic plume dispersion corridor"
+          >
+            Plume Buffer
+          </button>
+          <button
+            onClick={() => setShowIntakes(!showIntakes)}
+            className={`rounded px-2 py-0.5 transition ${showIntakes ? 'bg-indigo-900/80 text-indigo-200 font-bold' : 'text-slate-400'}`}
+            title="Toggle municipal water intakes"
+          >
+            Intakes
+          </button>
+        </div>
+
         <button
           onClick={resetView}
           className="flex items-center gap-1 rounded-lg border border-slate-700/60 bg-slate-900/80 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-slate-800"
           title="Fit all stations"
         >
-          <Maximize2 size={12} /> Fit stations
+          <Maximize2 size={12} /> Fit
         </button>
+
+        {/* GeoJSON Export Button */}
+        <a
+          href="/api/gis/export"
+          download="aquasentinel-gis-layers.geojson"
+          className="flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-950/80 px-2.5 py-1.5 text-xs font-semibold text-teal-300 hover:bg-teal-900 transition shadow-sm"
+          title="Export standard RFC 7946 GeoJSON FeatureCollection for QGIS / ArcGIS"
+        >
+          <Download size={12} />
+          <span>Export GeoJSON</span>
+        </a>
       </div>
+
+      {/* Downstream Drinking Water Intake Alert Banner */}
+      {activePlume && activePlume.affectedIntakes.length > 0 && (
+        <div className="absolute top-14 left-3 right-3 sm:right-auto sm:max-w-md z-[1000] rounded-xl border border-rose-500/40 bg-slate-950/90 p-3 text-xs text-white shadow-2xl backdrop-blur-md">
+          <div className="flex items-center gap-2 text-rose-400 font-semibold border-b border-slate-800 pb-1.5">
+            <ShieldAlert size={14} className="animate-pulse" />
+            <span>Downstream Receptor Vulnerability Analysis</span>
+          </div>
+          <div className="mt-2 space-y-1.5 text-[11px] text-slate-300">
+            {activePlume.affectedIntakes.map((intake: any) => (
+              <div key={intake.id} className="flex justify-between items-center rounded bg-slate-900/80 px-2 py-1">
+                <div>
+                  <div className="font-semibold text-slate-100">{intake.name}</div>
+                  <div className="text-[10px] text-slate-400">{intake.distanceKmFromOutfall} km downstream · {intake.capacityMld} MLD</div>
+                </div>
+                <div className="text-right">
+                  <span className="rounded bg-rose-950 border border-rose-800 px-1.5 py-0.5 text-[10px] font-mono text-rose-300">
+                    ETA: {intake.estimatedPlumeArrivalMinutes}m
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 text-[10px] text-amber-300 flex items-center gap-1">
+            <AlertTriangle size={11} /> Pre-emptive gate closure recommended for intakes within plume path.
+          </div>
+        </div>
+      )}
 
       {/* Live Weather Overlay Card */}
       {selectedWeather && (
@@ -249,7 +498,7 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
       )}
 
       {/* Map DOM Canvas */}
-      <div ref={mapContainerRef} className="h-[420px] w-full" data-testid="gis-map-canvas" />
+      <div ref={mapContainerRef} className="h-[460px] w-full" data-testid="gis-map-canvas" />
     </div>
   );
 }

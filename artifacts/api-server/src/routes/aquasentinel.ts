@@ -7,6 +7,15 @@ import { saveMediaFile } from "../lib/media-upload";
 import { defaultEnvironmentalDataSource } from "../lib/environmental-data-source";
 import { getHistoricalStormBacktest } from "../lib/backtest-service";
 import { validateFhirResource } from "../lib/fhir-validator";
+import { evaluateAquaSentinelModel, completeBenchmarkCorpus } from "../lib/benchmark-evaluation-engine";
+import { getNextAuditBlockMetadata, verifyAuditChainIntegrity } from "../lib/audit-chain";
+import {
+  getWatershedBasinGeoJson,
+  getRiverFlowlinesGeoJson,
+  calculatePlumeDispersionZone,
+  municipalWaterIntakes,
+  exportCompleteGisFeatureCollection,
+} from "../lib/gis-service";
 import {
   AnalyzeObservationParams,
   AnalyzeObservationResponse,
@@ -242,6 +251,26 @@ router.post("/observations", async (req, res): Promise<void> => {
   const [created] = await db.insert(observationsTable).values(observation).returning();
 
   try {
+    const rawDetails = {
+      siteId: site.id,
+      siteName: site.name,
+      waterAppearance: parsed.data.waterAppearance,
+      aiConfidence,
+      hasPhoto: Boolean(parsed.data.imageName),
+      provenance: {
+        origin: "CITIZEN_MOBILE_OBSERVATION",
+        qualityAssurance: "AI_VERIFIED_PHOTO",
+        submissionTimestamp: new Date().toISOString(),
+      },
+    };
+    const blockMeta = await getNextAuditBlockMetadata(
+      req.authContext?.userId || "citizen_user",
+      req.authContext?.role || "Citizen scientist",
+      "observation_submitted",
+      created.id,
+      rawDetails
+    );
+
     await db.insert(auditLogsTable).values({
       id: createId("audit"),
       actorId: req.authContext?.userId || "citizen_user",
@@ -250,14 +279,14 @@ router.post("/observations", async (req, res): Promise<void> => {
       targetType: "observation",
       targetId: created.id,
       details: {
-        siteId: site.id,
-        siteName: site.name,
-        waterAppearance: parsed.data.waterAppearance,
-        aiConfidence,
-        hasPhoto: Boolean(parsed.data.imageName),
+        ...rawDetails,
+        previousHash: blockMeta.previousHash,
+        hash: blockMeta.hash,
+        signature: blockMeta.signature,
       },
       ipAddress: req.ip || "127.0.0.1",
       userAgent: (req.headers["user-agent"] as string) || "unknown",
+      timestamp: blockMeta.timestamp,
     });
   } catch (err) {
     // Non-blocking audit error
@@ -468,6 +497,27 @@ router.post("/alerts/:alertId/review", async (req, res): Promise<void> => {
   const [updated] = await db.update(alertsTable).set({ status: nextStatus, reviewHistory: history }).where(eq(alertsTable.id, alert.id)).returning();
 
   try {
+    const rawDetails = {
+      siteId: alert.siteId,
+      siteName: alert.siteName,
+      decision: body.data.decision,
+      note: body.data.note ?? "",
+      previousStatus: alert.status,
+      nextStatus,
+      provenance: {
+        origin: "ENVIRONMENTAL_OFFICER_REVIEW",
+        actorRole: req.authContext?.role || "Environmental officer",
+        signedTimestamp: new Date().toISOString(),
+      },
+    };
+    const blockMeta = await getNextAuditBlockMetadata(
+      req.authContext?.userId || "officer_user",
+      req.authContext?.role || "Environmental officer",
+      `alert_${body.data.decision}`,
+      alert.id,
+      rawDetails
+    );
+
     await db.insert(auditLogsTable).values({
       id: createId("audit"),
       actorId: req.authContext?.userId || "officer_user",
@@ -476,15 +526,14 @@ router.post("/alerts/:alertId/review", async (req, res): Promise<void> => {
       targetType: "alert",
       targetId: alert.id,
       details: {
-        siteId: alert.siteId,
-        siteName: alert.siteName,
-        decision: body.data.decision,
-        note: body.data.note ?? "",
-        previousStatus: alert.status,
-        nextStatus,
+        ...rawDetails,
+        previousHash: blockMeta.previousHash,
+        hash: blockMeta.hash,
+        signature: blockMeta.signature,
       },
       ipAddress: req.ip || "127.0.0.1",
       userAgent: (req.headers["user-agent"] as string) || "unknown",
+      timestamp: blockMeta.timestamp,
     });
 
     if (body.data.decision === "verify" || body.data.decision === "escalate") {
@@ -576,10 +625,48 @@ router.post("/missions/:missionId/complete", async (req, res): Promise<void> => 
     return;
   }
   const [updated] = await db.update(missionsTable).set({ status: "completed" }).where(eq(missionsTable.id, params.data.missionId)).returning();
-  if (!updated) {
-    res.status(404).json({ error: "Mission not found" });
-    return;
+  try {
+    const rawDetails = {
+      missionId: updated.id,
+      siteId: updated.siteId,
+      siteName: updated.siteName,
+      alertId: updated.alertId,
+      completedStatus: updated.status,
+      provenance: {
+        origin: "FIELD_MISSION_RESPONSE",
+        actorRole: req.authContext?.role || "Field Responder",
+        completedTimestamp: new Date().toISOString(),
+      },
+    };
+    const blockMeta = await getNextAuditBlockMetadata(
+      req.authContext?.userId || "field_responder",
+      req.authContext?.role || "Field Responder",
+      "mission_completed",
+      updated.id,
+      rawDetails
+    );
+
+    await db.insert(auditLogsTable).values({
+      id: createId("audit"),
+      actorId: req.authContext?.userId || "field_responder",
+      actorRole: req.authContext?.role || "Field Responder",
+      action: "mission_completed",
+      targetType: "mission",
+      targetId: updated.id,
+      details: {
+        ...rawDetails,
+        previousHash: blockMeta.previousHash,
+        hash: blockMeta.hash,
+        signature: blockMeta.signature,
+      },
+      ipAddress: req.ip || "127.0.0.1",
+      userAgent: (req.headers["user-agent"] as string) || "unknown",
+      timestamp: blockMeta.timestamp,
+    });
+  } catch (err) {
+    // Non-blocking audit error
   }
+
   res.json(CompleteMissionResponse.parse(mapMission(updated)));
 });
 
@@ -762,6 +849,50 @@ router.get("/fhir/metadata", async (_req, res): Promise<void> => {
 router.get("/validation/backtest", async (_req, res): Promise<void> => {
   const result = getHistoricalStormBacktest();
   res.json(result);
+});
+
+// 6b. Quantitative Empirical Model Evaluation against Benchmark Datasets
+router.get("/validation/evaluation", async (_req, res): Promise<void> => {
+  const report = evaluateAquaSentinelModel(completeBenchmarkCorpus);
+  res.json(report);
+});
+
+// 6c. Cryptographic Audit Chain Verification (Tamper-Evidence & Hash Chaining)
+router.get("/audit/verify", async (_req, res): Promise<void> => {
+  await ensureDemoData();
+  const verification = await verifyAuditChainIntegrity();
+  res.json(verification);
+});
+
+// 6d. Real Geospatial Intelligence (Catchment Basins, Flowlines, Drinking Water Intakes)
+router.get("/gis/features", async (_req, res): Promise<void> => {
+  res.json({
+    basins: getWatershedBasinGeoJson(),
+    flowlines: getRiverFlowlinesGeoJson(),
+    intakes: municipalWaterIntakes,
+  });
+});
+
+// 6e. Dynamic Plume Dispersion Corridor & Intakes at Risk for a specific Site
+router.get("/gis/plume/:siteId", async (req, res): Promise<void> => {
+  await ensureDemoData();
+  const site = await getSiteById(req.params.siteId);
+  if (!site) {
+    res.status(404).json({ error: "Site not found" });
+    return;
+  }
+  const plume = calculatePlumeDispersionZone(site.id, site.name, site.latitude, site.longitude, site.risk);
+  res.json(plume);
+});
+
+// 6f. RFC 7946 Standard GeoJSON FeatureCollection Export
+router.get("/gis/export", async (_req, res): Promise<void> => {
+  await ensureDemoData();
+  const sites = await db.select().from(sitesTable);
+  const geojson = exportCompleteGisFeatureCollection(sites);
+  res.setHeader("Content-Disposition", 'attachment; filename="aquasentinel-gis-layers.geojson"');
+  res.setHeader("Content-Type", "application/geo+json");
+  res.json(geojson);
 });
 
 // 7. FHIR R4 Public Validator Runner (HAPI FHIR integration)

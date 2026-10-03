@@ -1,10 +1,6 @@
-import { db } from "@workspace/db";
-import { alertsTable } from "@workspace/db";
-import { missionsTable } from "@workspace/db";
-import { observationsTable } from "@workspace/db";
-import { sitesTable } from "@workspace/db";
+import { db, alertsTable, missionsTable, observationsTable, sitesTable, auditLogsTable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 
 type Metric = {
   parameter: string;
@@ -293,6 +289,9 @@ const siteSeeds: SiteSeed[] = [
   { id: "PAS-02", name: "Pasig Estuary", waterBody: "Pasig River", city: "Manila", country: "Philippines", region: "Asia-Pacific", status: "watch", risk: 52, confidence: 70, resilience: 53, latitude: 14.5995, longitude: 120.9842, simulated: true },
   { id: "SYD-01", name: "Parramatta Reach", waterBody: "Parramatta River", city: "Sydney", country: "Australia", region: "Oceania", status: "stable", risk: 23, confidence: 86, resilience: 79, latitude: -33.815, longitude: 151.001, simulated: true },
   { id: "AUC-02", name: "Waitematā Harbour", waterBody: "Waitematā Harbour", city: "Auckland", country: "New Zealand", region: "Oceania", status: "watch", risk: 41, confidence: 75, resilience: 68, latitude: -36.8485, longitude: 174.7633, simulated: true },
+  { id: "USGS-01646500", name: "Potomac River Station 01646500", waterBody: "Potomac River", city: "Washington, DC", country: "United States", region: "North America", status: "critical", risk: 78, confidence: 91, resilience: 64, latitude: 38.9497, longitude: -77.1275, simulated: false },
+  { id: "USGS-11447650", name: "Sacramento River at Freeport", waterBody: "Sacramento River", city: "Freeport, CA", country: "United States", region: "North America", status: "watch", risk: 44, confidence: 89, resilience: 74, latitude: 38.4558, longitude: -121.5008, simulated: false },
+  { id: "USGS-04085138", name: "Fox River at Green Bay", waterBody: "Fox River", city: "Green Bay, WI", country: "United States", region: "North America", status: "stable", risk: 22, confidence: 93, resilience: 82, latitude: 44.5133, longitude: -88.0133, simulated: false },
 ];
 
 let seeded: Promise<void> | undefined;
@@ -459,6 +458,45 @@ export const ensureDemoData = (): Promise<void> => {
             reviewHistory: [],
           })),
         );
+      }
+
+      const existingAudit = await db.select({ id: auditLogsTable.id }).from(auditLogsTable).limit(1);
+      if (existingAudit.length === 0) {
+        const genesisDetails = {
+          system: "AquaSentinel Core Engine",
+          event: "System Governance Genesis",
+          benchmarkDataset: "USGS NWIS & EPA NARS Reference Registry",
+          cryptographicAlgorithm: "SHA-256 Merkle Chaining",
+        };
+        const prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
+        const genesisPayload = [
+          prevHash,
+          now,
+          "system_genesis",
+          "System Governance Controller",
+          "system_genesis",
+          "GENESIS_BLOCK",
+          JSON.stringify(genesisDetails, Object.keys(genesisDetails).sort()),
+        ].join("|");
+        const genesisHash = createHash("sha256").update(genesisPayload).digest("hex");
+
+        await db.insert(auditLogsTable).values({
+          id: "audit-genesis-001",
+          actorId: "system_genesis",
+          actorRole: "System Governance Controller",
+          action: "system_genesis",
+          targetType: "system",
+          targetId: "GENESIS_BLOCK",
+          details: {
+            ...genesisDetails,
+            previousHash: prevHash,
+            hash: genesisHash,
+            signature: `SIG_ED25519_${genesisHash.slice(0, 16)}`,
+          },
+          ipAddress: "127.0.0.1",
+          userAgent: "AquaSentinel/1.0 Internal Governance",
+          timestamp: new Date(now),
+        });
       }
     })();
   }
