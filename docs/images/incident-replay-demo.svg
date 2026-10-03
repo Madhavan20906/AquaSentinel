@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="replay-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+    <linearGradient id="replay-teal" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14b8a6" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <rect width="1200" height="70" fill="url(#replay-bg)" stroke="#1e293b" />
+  <circle cx="36" cy="35" r="14" fill="#0d9488" />
+  <text x="36" y="40" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">🎬</text>
+  <text x="62" y="38" fill="#f8fafc" font-size="18" font-weight="700">AquaSentinel — Live Incident Replay &amp; Explainable AI Showcase</text>
+  <text x="62" y="55" fill="#94a3b8" font-size="12">Interactive Hackathon Demo: 15-Minute Storm Runoff to Coordinated Municipal Response</text>
+
+  <!-- Step Scrubber Bar (14:02 to 14:17) -->
+  <g transform="translate(40, 85)">
+    <rect width="1120" height="54" rx="10" fill="#131b2e" stroke="#1e293b" />
+    <!-- 8 Step Nodes -->
+    <g transform="translate(20, 10)">
+      <rect x="0" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="62" y="16" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">14:02 Rain</text>
+      <text x="62" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">42mm storm</text>
+
+      <rect x="135" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="197" y="16" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">14:07 Turbidity</text>
+      <text x="197" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">+42% spike</text>
+
+      <rect x="270" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="332" y="16" fill="#c084fc" font-size="10" font-weight="bold" text-anchor="middle">14:09 Citizens</text>
+      <text x="332" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">3 photo reports</text>
+
+      <rect x="405" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="467" y="16" fill="#f59e0b" font-size="10" font-weight="bold" text-anchor="middle">14:11 Anomaly</text>
+      <text x="467" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">+2.85σ detected</text>
+
+      <rect x="540" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="602" y="16" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">14:12 Correlate</text>
+      <text x="602" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">High cross-fit</text>
+
+      <!-- Active Selected Step: 14:13 Risk 82 -->
+      <rect x="675" y="0" width="145" height="34" rx="6" fill="#450a0a" stroke="#ef4444" stroke-width="2" />
+      <text x="747" y="16" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">▶ 14:13 RISK 82</text>
+      <text x="747" y="28" fill="#f87171" font-size="9" text-anchor="middle">CRITICAL (91% Conf)</text>
+
+      <rect x="830" y="0" width="125" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="892" y="16" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">14:15 Review</text>
+      <text x="892" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">Officer confirms</text>
+
+      <rect x="965" y="0" width="115" height="34" rx="6" fill="#1e293b" stroke="#334155" />
+      <text x="1022" y="16" fill="#2dd4bf" font-size="10" font-weight="bold" text-anchor="middle">14:17 Action</text>
+      <text x="1022" y="28" fill="#94a3b8" font-size="9" text-anchor="middle">Telegram / FHIR</text>
+    </g>
+  </g>
+
+  <!-- Left: Incident Narrative & Active Metrics -->
+  <g transform="translate(40, 155)">
+    <rect width="640" height="495" rx="14" fill="#111827" stroke="#1f2937" />
+    
+    <!-- Step Header -->
+    <rect x="20" y="20" width="600" height="85" rx="10" fill="#1f2937" stroke="#374151" />
+    <circle cx="50" cy="50" r="16" fill="#ef4444" opacity="0.2" />
+    <circle cx="50" cy="50" r="8" fill="#ef4444" />
+    <text x="75" y="44" fill="#f87171" font-size="12" font-weight="bold">STEP 06 · 14:13 UTC+05:30</text>
+    <text x="75" y="65" fill="#ffffff" font-size="16" font-weight="bold">Risk Upgraded: MODERATE → CRITICAL (82/100)</text>
+    <text x="75" y="85" fill="#9ca3af" font-size="11">Corroborated evidence crosses emergency threshold. Lead time: 4.5 hours.</text>
+
+    <!-- Synchronized Telemetry Gauges -->
+    <g transform="translate(20, 120)">
+      <rect x="0" y="0" width="140" height="90" rx="8" fill="#090d16" stroke="#374151" />
+      <text x="15" y="22" fill="#9ca3af" font-size="10" font-family="monospace">TURBIDITY</text>
+      <text x="15" y="52" fill="#ef4444" font-size="22" font-weight="bold" font-family="monospace">75.0</text>
+      <text x="75" y="52" fill="#6b7280" font-size="12">NTU</text>
+      <text x="15" y="74" fill="#f87171" font-size="10" font-weight="bold">+525% vs Base</text>
+
+      <rect x="153" y="0" width="140" height="90" rx="8" fill="#090d16" stroke="#374151" />
+      <text x="168" y="22" fill="#9ca3af" font-size="10" font-family="monospace">DISSOLVED O₂</text>
+      <text x="168" y="52" fill="#f59e0b" font-size="22" font-weight="bold" font-family="monospace">3.2</text>
+      <text x="215" y="52" fill="#6b7280" font-size="12">mg/L</text>
+      <text x="168" y="74" fill="#fbbf24" font-size="10" font-weight="bold">Hypoxic Stress</text>
+
+      <rect x="306" y="0" width="140" height="90" rx="8" fill="#090d16" stroke="#374151" />
+      <text x="321" y="22" fill="#9ca3af" font-size="10" font-family="monospace">RAINFALL (24H)</text>
+      <text x="321" y="52" fill="#38bdf8" font-size="22" font-weight="bold" font-family="monospace">52.0</text>
+      <text x="380" y="52" fill="#6b7280" font-size="12">mm</text>
+      <text x="321" y="74" fill="#38bdf8" font-size="10" font-weight="bold">Surface Runoff</text>
+
+      <rect x="460" y="0" width="140" height="90" rx="8" fill="#090d16" stroke="#374151" />
+      <text x="475" y="22" fill="#9ca3af" font-size="10" font-family="monospace">CITIZEN EVIDENCE</text>
+      <text x="475" y="52" fill="#c084fc" font-size="22" font-weight="bold" font-family="monospace">8</text>
+      <text x="495" y="52" fill="#6b7280" font-size="12">reports</text>
+      <text x="475" y="74" fill="#c084fc" font-size="10" font-weight="bold">Photos Corroborate</text>
+    </g>
+
+    <!-- One Health 10-Second Chain Visualizer -->
+    <g transform="translate(20, 230)">
+      <rect width="600" height="245" rx="10" fill="#090d16" stroke="#1f2937" />
+      <text x="20" y="28" fill="#2dd4bf" font-size="12" font-weight="bold">ONE HEALTH TRANSMISSION CHAIN (10-SECOND READ)</text>
+      
+      <!-- 5 Facet Blocks -->
+      <g transform="translate(20, 45)">
+        <rect x="0" y="0" width="105" height="175" rx="8" fill="#111827" stroke="#0891b2" />
+        <text x="52" y="24" fill="#22d3ee" font-size="11" font-weight="bold" text-anchor="middle">💧 Water</text>
+        <text x="52" y="44" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">Critical</text>
+        <text x="10" y="70" fill="#9ca3af" font-size="9">• 75 NTU (+525%)</text>
+        <text x="10" y="88" fill="#9ca3af" font-size="9">• 3.2 mg/L DO</text>
+        <text x="10" y="106" fill="#9ca3af" font-size="9">• 42mm rain</text>
+        <text x="10" y="124" fill="#9ca3af" font-size="9">• +4.2σ z-score</text>
+        <rect x="10" y="145" width="85" height="18" rx="4" fill="#164e63" />
+        <text x="52" y="157" fill="#67e8f9" font-size="8" font-weight="bold" text-anchor="middle">Physical Pulse</text>
+
+        <rect x="115" y="0" width="105" height="175" rx="8" fill="#111827" stroke="#2563eb" />
+        <text x="167" y="24" fill="#60a5fa" font-size="11" font-weight="bold" text-anchor="middle">🐟 Aquatic</text>
+        <text x="167" y="44" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">Severe Stress</text>
+        <text x="125" y="70" fill="#9ca3af" font-size="9">• Benthic loss</text>
+        <text x="125" y="88" fill="#9ca3af" font-size="9">• Gill clogging</text>
+        <text x="125" y="106" fill="#9ca3af" font-size="9">• Hypoxic layer</text>
+        <text x="125" y="124" fill="#9ca3af" font-size="9">• Fry mortality</text>
+        <rect x="125" y="145" width="85" height="18" rx="4" fill="#1e3a8a" />
+        <text x="167" y="157" fill="#93c5fd" font-size="8" font-weight="bold" text-anchor="middle">Ecological Risk</text>
+
+        <rect x="230" y="0" width="105" height="175" rx="8" fill="#111827" stroke="#d97706" />
+        <text x="282" y="24" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">🐕 Animal</text>
+        <text x="282" y="44" fill="#fcd34d" font-size="10" font-weight="bold" text-anchor="middle">Moderate</text>
+        <text x="240" y="70" fill="#9ca3af" font-size="9">• Livestock</text>
+        <text x="240" y="88" fill="#9ca3af" font-size="9">• Riparian dogs</text>
+        <text x="240" y="106" fill="#9ca3af" font-size="9">• Prey toxins</text>
+        <text x="240" y="124" fill="#9ca3af" font-size="9">• Drinking risk</text>
+        <rect x="240" y="145" width="85" height="18" rx="4" fill="#451a03" />
+        <text x="282" y="157" fill="#fde68a" font-size="8" font-weight="bold" text-anchor="middle">Vector Control</text>
+
+        <rect x="345" y="0" width="105" height="175" rx="8" fill="#111827" stroke="#e11d48" />
+        <text x="397" y="24" fill="#f43f5e" font-size="11" font-weight="bold" text-anchor="middle">👨‍👩‍👧 Human</text>
+        <text x="397" y="44" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">High Exposure</text>
+        <text x="355" y="70" fill="#9ca3af" font-size="9">• 12,000 at risk</text>
+        <text x="355" y="88" fill="#9ca3af" font-size="9">• Bathing hazard</text>
+        <text x="355" y="106" fill="#9ca3af" font-size="9">• Fishing contact</text>
+        <text x="355" y="124" fill="#9ca3af" font-size="9">• Intake warning</text>
+        <rect x="355" y="145" width="85" height="18" rx="4" fill="#4c0519" />
+        <text x="397" y="157" fill="#fecdd3" font-size="8" font-weight="bold" text-anchor="middle">Public Health</text>
+
+        <rect x="460" y="0" width="100" height="175" rx="8" fill="#111827" stroke="#059669" />
+        <text x="510" y="24" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">🛡️ Action</text>
+        <text x="510" y="44" fill="#6ee7b7" font-size="10" font-weight="bold" text-anchor="middle">Dispatched</text>
+        <text x="470" y="70" fill="#9ca3af" font-size="9">• Telegram</text>
+        <text x="470" y="88" fill="#9ca3af" font-size="9">• Field sampler</text>
+        <text x="470" y="106" fill="#9ca3af" font-size="9">• Weir divert</text>
+        <text x="470" y="124" fill="#9ca3af" font-size="9">• FHIR R4 push</text>
+        <rect x="470" y="145" width="80" height="18" rx="4" fill="#064e3b" />
+        <text x="510" y="157" fill="#a7f3d0" font-size="8" font-weight="bold" text-anchor="middle">Closed Loop</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right: The Auditable Additive Factor Ledger -->
+  <g transform="translate(710, 155)">
+    <rect width="450" height="495" rx="14" fill="#111827" stroke="#1f2937" />
+    
+    <text x="24" y="38" fill="#2dd4bf" font-size="11" font-family="monospace" font-weight="bold">AUDITABLE EXPLAINABLE AI LEDGER</text>
+    <text x="24" y="62" fill="#ffffff" font-size="17" font-weight="bold">Why Does the AI Believe This?</text>
+    
+    <!-- Risk Summary Box -->
+    <rect x="24" y="80" width="402" height="60" rx="8" fill="#090d16" stroke="#374151" />
+    <text x="40" y="112" fill="#ef4444" font-size="18" font-weight="bold">HIGH RISK — 82</text>
+    <text x="40" y="128" fill="#9ca3af" font-size="11">Early warning lead time: 4.5 hours ahead of peak hypoxia</text>
+
+    <!-- The Exact Additive Ledger -->
+    <g transform="translate(24, 155)">
+      <rect x="0" y="0" width="402" height="46" rx="6" fill="#1f2937" />
+      <text x="16" y="22" fill="#f3f4f6" font-size="12" font-weight="bold">+31 Turbidity Anomaly</text>
+      <text x="16" y="36" fill="#9ca3af" font-size="10">+525% above baseline (z-score +4.2σ)</text>
+      <text x="386" y="28" fill="#2dd4bf" font-size="14" font-weight="bold" font-family="monospace" text-anchor="end">+31 pts</text>
+
+      <rect x="0" y="54" width="402" height="46" rx="6" fill="#1f2937" />
+      <text x="16" y="76" fill="#f3f4f6" font-size="12" font-weight="bold">+21 Rainfall/Runoff Correlation</text>
+      <text x="16" y="90" fill="#9ca3af" font-size="10">42 mm convective storm accumulation multiplier</text>
+      <text x="386" y="82" fill="#2dd4bf" font-size="14" font-weight="bold" font-family="monospace" text-anchor="end">+21 pts</text>
+
+      <rect x="0" y="108" width="402" height="46" rx="6" fill="#1f2937" />
+      <text x="16" y="130" fill="#f3f4f6" font-size="12" font-weight="bold">+17 Citizen Observations</text>
+      <text x="16" y="144" fill="#9ca3af" font-size="10">8 corroborated reports within 2-hour window</text>
+      <text x="386" y="136" fill="#2dd4bf" font-size="14" font-weight="bold" font-family="monospace" text-anchor="end">+17 pts</text>
+
+      <rect x="0" y="162" width="402" height="46" rx="6" fill="#1f2937" />
+      <text x="16" y="184" fill="#f3f4f6" font-size="12" font-weight="bold">+13 Historical Baseline Deviation</text>
+      <text x="16" y="198" fill="#9ca3af" font-size="10">Exceeds 5-year seasonal normal envelope</text>
+      <text x="386" y="190" fill="#2dd4bf" font-size="14" font-weight="bold" font-family="monospace" text-anchor="end">+13 pts</text>
+
+      <!-- Ledger Divider & Total -->
+      <line x1="0" y1="220" x2="402" y2="220" stroke="#4b5563" stroke-width="1.5" />
+      <text x="16" y="240" fill="#ffffff" font-size="14" font-weight="bold" font-family="monospace">82  OVERALL RISK SCORE</text>
+      <text x="386" y="240" fill="#2dd4bf" font-size="16" font-weight="bold" font-family="monospace" text-anchor="end">82 / 100</text>
+    </g>
+
+    <!-- Decoupled Confidence Box -->
+    <g transform="translate(24, 420)">
+      <rect width="402" height="60" rx="8" fill="#042f2e" stroke="#115e59" />
+      <text x="16" y="24" fill="#5eead4" font-size="12" font-weight="bold">Confidence: 91% (High Decoupled Agreement)</text>
+      <text x="16" y="42" fill="#ccfbf1" font-size="10">✓ 3 independent streams agree · ✓ Exceeds +2.5σ · ✓ Citizen photos corroborate</text>
+    </g>
+  </g>
+</svg>

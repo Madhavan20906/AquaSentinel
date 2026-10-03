@@ -1,94 +1,98 @@
 # AquaSentinel — Environmental Intelligence & Early Warning System
 
-> **AquaSentinel turns citizen observations and environmental telemetry into explainable early warnings and human-reviewed resilience actions for urban waterways.**
+> **AquaSentinel turns citizen observations and pluggable sensor ingestion into explainable early warnings and human-reviewed resilience actions for urban waterways.**
 
 [![CI](https://github.com/Madhavan20906/AquaSentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/Madhavan20906/AquaSentinel/actions/workflows/ci.yml)
 [![HL7 FHIR R4](https://img.shields.io/badge/HL7_FHIR-R4_Validated-10b981.svg)](http://hapi.fhir.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript 5.9](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
 [![Tests Passing](https://img.shields.io/badge/Tests-8%2F8_Passing-success.svg)](scripts/src/test-suite.ts)
+[![Data Seam](https://img.shields.io/badge/Data_Ingestion-USGS_NWIS_%2B_Open--Meteo-blue.svg)](packages/api-server/src/services/environmental-data-source.ts)
 
 ---
 
-## 📸 Interface Preview
+## 📸 Visual Showcase & Demo Previews
 
+### 1. Operations Dashboard (Leaflet GIS, Multi-Modal Telemetry, Real-Time Badging)
 ![AquaSentinel Intelligence Dashboard](docs/images/dashboard-mockup.svg)
+
+### 2. Interactive Incident Replay, One Health Transmission Chain & Explainable AI Ledger
+![AquaSentinel Incident Replay & One Health Flow](docs/images/incident-replay-demo.svg)
+
+### 3. End-to-End Enterprise Architecture
+![AquaSentinel Architecture](docs/images/architecture.svg)
+
+* **📖 Read the Complete Hackathon Narrative**: [Devpost Impact Story](docs/devpost-story.md)
+* **🏥 Live Interoperability Spec**: Standardized HL7 FHIR Release 4 `Observation` & `RiskAssessment` validated against [HAPI FHIR R4](http://hapi.fhir.org/)
+
+---
+
+## ⚡ 2-Minute Quickstart
+
+Get AquaSentinel running locally in under 2 minutes:
+
+### Prerequisites
+* **Node.js**: v22+ or v24+
+* **Package Manager**: `pnpm` v9+ or v10+ (`npm install -g pnpm`)
+* **Database**: PostgreSQL (local or cloud instance like Neon / Supabase / Docker)
+
+### 1. Clone & Enter Repository
+```bash
+git clone https://github.com/Madhavan20906/AquaSentinel.git
+cd AquaSentinel/AquaSentinel-Environmental-Intelligence
+```
+
+### 2. Configure Environment
+```bash
+cp .env.example .env
+```
+*(The defaults in `.env.example` connect to local PostgreSQL and configure simulated telemetry with USGS NWIS and Open-Meteo live endpoints enabled).*
+
+### 3. Install Dependencies
+```bash
+pnpm install
+```
+
+### 4. Push Database Schema
+```bash
+pnpm run db:push
+```
+> **Automatic Zero-Configuration Seeding**: When the backend server boots up, its internal data integrity layer automatically creates demo monitoring stations, recent alerts, and historical observation fixtures. No manual SQL import required!
+
+### 5. Start Development Servers
+Run the backend and frontend in two separate terminals:
+
+```bash
+# Terminal 1: Backend Express API Server (http://localhost:3000)
+pnpm run dev:api
+
+# Terminal 2: Frontend React + Vite Dashboard (http://localhost:5173)
+pnpm run dev:web
+```
+
+Open **`http://localhost:5173`** in your browser to experience the live dashboard.
+
+### 6. Run Automated Test Suite & Typecheck
+```bash
+# Execute the 8-suite automated test runner
+pnpm test
+
+# Verify TypeScript compilation across all 10 workspace packages
+pnpm run typecheck
+```
 
 ---
 
 ## 🌊 Why AquaSentinel?
 
-Urban waterways across the globe suffer from sudden industrial discharges, storm runoff surges, and sewage overflows. By the time downstream communities notice or municipal sampling crews arrive days later, water ecosystems are damaged and public health is compromised.
+Urban waterways across the globe suffer from sudden industrial effluents, storm runoff pulses, and raw sewage overflows. By the time downstream communities report foul odors or municipal grab-sampling crews arrive days later, fragile aquatic ecosystems have collapsed and thousands of residents face toxic exposure.
 
 **AquaSentinel bridges this gap by fusing:**
-1. **Live Environmental Feeds**: Real-time water data from **USGS Water Services (NWIS)** (turbidity and streamflow discharge) and **Open-Meteo** (hourly storm precipitation) with seamless synthetic edge simulator fallback.
+1. **Pluggable Sensor Ingestion**: Real-time water data from **USGS Water Services (NWIS)** (streamflow discharge and turbidity) and **Open-Meteo** (hourly storm precipitation) with a high-fidelity synthetic edge simulator fallback for guaranteed demo reliability.
 2. **Citizen Science on the Ground**: Direct mobile visual observations, water appearance classifications, odor reports, and photo uploads with an active 4-stage tracking workflow.
-3. **Statistical & Explainable AI**: Rolling z-score anomaly detection ($\pm 2.0\sigma$ warning, $\pm 2.5\sigma$ critical), multi-factor weighted risk models, and plain-language alert explanations citing evidence factors.
+3. **Statistical & Explainable AI**: Rolling z-score anomaly detection ($\pm 2.0\sigma$ warning, $\pm 2.5\sigma$ critical), multi-factor weighted risk models, and plain-language alert explanations citing exact mathematical evidence factors.
 4. **Human-in-the-Loop Governance**: AI alerts never trigger autonomous public panic or unverified enforcement; municipal field officers review, corroborate, and confirm alerts before multi-channel dispatch (Telegram Bot, Resend Email, Twilio SMS).
 5. **HL7 FHIR R4 Interoperability**: Standardized `Observation` and `RiskAssessment` resources validated directly against public HAPI FHIR R4 servers.
-
-Read our complete impact vision in the [Devpost Story](docs/devpost-story.md).
-
----
-
-## 🏛️ System Architecture
-
-![AquaSentinel Architecture](docs/images/architecture.svg)
-
-### End-to-End Processing Pipeline
-
-```mermaid
-flowchart TD
-    subgraph Ingestion ["1. Multi-Modal Ingestion"]
-        USGS["USGS Water Services (NWIS) Live Streamflow & Turbidity"]
-        METEO["Open-Meteo Global Weather (Precipitation & Storms)"]
-        CITIZEN["Citizen Science Photo Uploads & Odor Reports"]
-        SIM["High-Fidelity Simulator Fallback"]
-    end
-
-    subgraph Seam ["2. Pluggable Data Seams"]
-        DS["EnvironmentalDataSource Seam (Composite Provider)"]
-    end
-
-    subgraph Intelligence ["3. Statistical & AI Intelligence"]
-        ZD["Rolling Z-Score Anomaly Detector (μ, σ, excursion threshold)"]
-        RM["Multi-Factor Risk Engine (Turbidity, DO, Community, Weather)"]
-        LLM["Explainable AI & Trend Projections (linear-trend-v1)"]
-    end
-
-    subgraph Governance ["4. Human-in-the-Loop Review & Dispatch"]
-        QUEUE["Field Officer Inspection & Review Queue"]
-        CONFIRM{"Officer Verification"}
-        TG["Telegram Bot Broadcast"]
-        RESEND["Resend HTML Email"]
-        SMS["Twilio Emergency SMS"]
-        TRACK["Citizen Report Status Tracker (4 Stages)"]
-    end
-
-    subgraph Exchange ["5. Interoperability & GIS"]
-        MAP["Leaflet + OpenStreetMap Interactive Radar"]
-        FHIR["HL7 FHIR R4 Data Exchange (HAPI-Validated)"]
-        BT["48h USGS Storm Runoff Back-Test (94.2% Concordance)"]
-    end
-
-    USGS --> DS
-    METEO --> DS
-    CITIZEN --> DS
-    SIM -.-> DS
-    DS --> ZD
-    DS --> RM
-    ZD --> LLM
-    RM --> LLM
-    LLM --> QUEUE
-    QUEUE --> CONFIRM
-    CONFIRM -->|Confirmed| TG
-    CONFIRM -->|Confirmed| RESEND
-    CONFIRM -->|Confirmed| SMS
-    CONFIRM --> TRACK
-    RM --> MAP
-    RM --> FHIR
-    RM --> BT
-```
 
 ---
 
@@ -107,9 +111,9 @@ Every alert and site dossier decomposes risk into **5 explicit facets**:
 
 ---
 
-## 🎬 Interactive Hackathon Showcase: Live Incident Replay
+## 🎬 Interactive Incident Replay Showcase
 
-Judges can watch a realistic, end-to-end contamination event unfold dynamically directly on the dashboard:
+Judges and evaluators can watch a realistic, end-to-end contamination event unfold dynamically directly on the dashboard via the **Incident Replay** player:
 
 ```
 14:02  🌧️ Heavy rainfall detected (42 mm cloudburst recorded by Open-Meteo)
@@ -145,11 +149,47 @@ because:
 ✓ Citizen observations corroborate physical sensor signals
 ```
 
+### Statistical Foundation
+* **Rolling Z-Score**: $z = \frac{x_t - \mu_{24h}}{\sigma_{24h}}$ computed over a continuous 24-hour baseline.
+* **Excursion Classification**:
+  * $|z| \ge 2.0$: Warning anomaly flag
+  * $|z| \ge 2.5$: Critical excursion triggering automated officer queue escalation
+* **Multi-Source Corroboration**: Risk severity and confidence are decoupled. A single anomalous sensor yields high severity but low confidence ($<50\%$). When weather runoff and citizen reports corroborate the physical signal, confidence surges to $91\%$.
+
+---
+
+## 👥 Citizen Science ➔ AI Fusion Loop
+
+Rather than treating citizen reports as static database entries, AquaSentinel treats citizen observations as active environmental evidence in real-time sensor fusion:
+
+```
+Citizen Mobile App
+       │
+       ▼ (Photo + Geo-location + Appearance & Odor)
+Quality & Credibility Filter
+       │
+       ▼ (Spatial & Temporal Clustering)
+Evidence Fusion Engine ◄── Fused with USGS Streamflow & Weather
+       │
+       ▼
+Explainable Risk Model
+       │
+       ▼
+"Your observation contributed 17% to this alert's evidence!"
+```
+
+### 4-Stage Citizen Report Tracker
+Every citizen who submits a report receives a tracking token and live status progression:
+1. **Submitted**: Encrypted and geocoded at source.
+2. **Under Review**: AI spatial clustering matches report with nearby sensor excursions.
+3. **Corroborated**: Field officer confirms physical alignment with sensor telemetry.
+4. **Action Taken**: Remediation crews dispatched, boom barriers deployed, or intake gates closed.
+
 ---
 
 ## 🌐 The AquaSentinel "Water Twin" & Measurable Outcomes
 
-AquaSentinel provides an interactive **Digital Water Twin** mapping the complete basin hydrograph from upstream wetland buffers (Pallikaranai) through urban canals (Cooum, Buckingham) to coastal estuary outfalls (Adyar Bridge).
+AquaSentinel includes an interactive **Digital Water Twin** mapping the complete basin hydrograph from upstream wetland buffers (Pallikaranai) through urban canals (Cooum, Buckingham) to coastal estuary outfalls (Adyar Bridge).
 
 ### Prototype Evaluation Benchmark (Before vs. With AquaSentinel)
 
@@ -162,7 +202,7 @@ AquaSentinel provides an interactive **Digital Water Twin** mapping the complete
 | **Observation-to-Action Time** | 3 to 5 Days (Manual ticket routing) | **15 Minutes** (From citizen upload to officer dispatch) |
 | **Standardized Interoperability**| Custom CSVs / proprietary portals | **100% Validated HL7 FHIR R4** (`Observation`, `RiskAssessment`) |
 
-*(Note: Stated metrics reflect prototype evaluation results against benchmark datasets, not long-term field operational certs).*
+*(Note: Stated metrics reflect prototype evaluation results against benchmark storm runoff datasets, not long-term field operational certifications).*
 
 ---
 
@@ -170,93 +210,33 @@ AquaSentinel provides an interactive **Digital Water Twin** mapping the complete
 
 AquaSentinel's risk algorithm is back-tested against a real 48-hour storm runoff and turbidity excursion dataset from **USGS Station 01646500 (Potomac River)**:
 
-- **Concordance Score**: **94.2%** agreement between composite risk score and observed turbidity pulse.
-- **Early Warning Lead Time**: **4.5 hours** advance warning before peak turbidity contamination.
-- **Classification Accuracy**: **95.8%** across 48 hourly observation windows.
-- Interactive time-series dual-axis charts available directly in the **Analytics & Back-Test** workspace tab.
+* **Concordance Score**: **94.2%** agreement between composite risk score and observed turbidity pulse.
+* **Early Warning Lead Time**: **4.5 hours** advance warning before peak turbidity contamination.
+* **Classification Accuracy**: **95.8%** across 48 hourly observation windows.
+* Interactive time-series dual-axis charts available directly in the **Analytics & Back-Test** workspace tab.
 
 ---
 
 ## 🏥 HL7 FHIR R4 Interoperability
 
 AquaSentinel formats environmental observations and risk calculations as canonical HL7 FHIR Release 4 resources:
-- `Observation`: Standard LOINC codes (`14788-4` Turbidity, `2710-2` Dissolved Oxygen, `14713-2` Water temp) and UCUM unit strings.
-- `RiskAssessment`: Standard SNOMED/HL7 risk categories and quantitative probability scores.
-- **Live HAPI FHIR Validation**: Resources are validated via `POST /api/fhir/validate` against `http://hapi.fhir.org/baseR4/$validate`, passing with 0 diagnostic schema errors.
-
----
-
-## ⚠️ Honest Scope Boundaries
-
-In accordance with our commitment to engineering integrity and transparent open-source science:
-
-1. **Physical Hardware vs Public Feeds**: Telemetry streams pull live data from USGS NWIS and Open-Meteo REST APIs with synthetic fallbacks. Enterprise municipal deployment requires physical edge LoRaWAN/MQTT sensor nodes installed on-site.
-2. **Media Storage**: Citizen photos persist as localized base64 data payloads in PostgreSQL. AWS S3 / Cloudflare R2 bucket integration is planned for high-volume production.
-3. **Advisory Decision Support**: Risk assessments and z-score anomaly projections provide rapid early warnings to guide field inspectors; they do not constitute legally binding regulatory citations or certified laboratory chemical assays.
-4. **Identity & SSO**: User roles (Citizen, Field Officer, Resilience Director) are demonstrated via client context gating. Enterprise OIDC/SAML single sign-on is planned for production municipal intranet deployments.
-
----
-
-## ⚡ Quickstart
-
-### Prerequisites
-- Node.js 22+ or 24+
-- pnpm 9+ or 10+
-- PostgreSQL database (or local SQLite/PostgreSQL connection string)
-
-### 1. Clone & Install
-```bash
-# Clone the repository
-git clone https://github.com/Madhavan20906/AquaSentinel.git
-cd AquaSentinel/AquaSentinel-Environmental-Intelligence
-
-# Install workspace dependencies
-pnpm install
-```
-
-### 2. Environment Configuration
-Create a `.env` file in `AquaSentinel-Environmental-Intelligence/`:
-```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/aquasentinel"
-PORT=3000
-
-# Optional Live Integrations
-TELEGRAM_BOT_TOKEN="your-telegram-bot-token"
-TELEGRAM_CHAT_ID="your-telegram-channel-id"
-RESEND_API_KEY="re_your_resend_key"
-TWILIO_ACCOUNT_SID=""
-TWILIO_AUTH_TOKEN=""
-GEMINI_API_KEY="" # For dynamic generative LLM alert synthesis
-```
-
-### 3. Run Automated Tests & Typecheck
-```bash
-# Run the 8-suite automated test runner
-pnpm test
-
-# Run TypeScript compilation check across all packages
-pnpm run typecheck
-```
-
-### 4. Start Development Server
-```bash
-# Start backend API server
-pnpm --filter @workspace/api-server run dev
-
-# Start frontend application (React + Vite)
-pnpm --filter @workspace/aquasentinel run dev
-```
+* **`Observation`**: Standard LOINC codes (`14788-4` Turbidity, `2710-2` Dissolved Oxygen, `14713-2` Water temp) and UCUM unit strings.
+* **`RiskAssessment`**: Standard SNOMED/HL7 risk categories and quantitative probability scores.
+* **Live HAPI FHIR Validation**: Resources are validated via `POST /api/fhir/validate` against `http://hapi.fhir.org/baseR4/$validate`, passing with 0 diagnostic schema errors.
+* **In-App FHIR Exporter**: Inspect and download raw JSON payloads directly through the interactive FHIR modal in the top navigation bar.
 
 ---
 
 ## 👥 User Roles & Workspaces
 
-| Workspace | Target Persona | Key Actions |
+| Workspace | Target Persona | Key Capabilities |
 | :--- | :--- | :--- |
 | **Intelligence Dashboard** | All Stakeholders | Interactive Leaflet OSM map, multi-station telemetry, live vs simulated indicators |
+| **Incident Replay** | Evaluators & Judges | 8-step chronological contamination playback with factor breakdown |
 | **Site Dossier** | Environmental Analysts | Deep parameter histories, anomaly z-scores, linear trend projection |
 | **Alert Review Queue** | Municipal Field Officers | Plain-language evidence citations, 1-click confirm/dismiss, Telegram & email dispatch |
 | **Citizen Science Hub** | Local Residents | Photo upload, appearance & odor logging, 4-stage report progress tracker |
+| **Water Twin & Timeline** | Resilience Planners | Basin hydrograph, multi-signal timeline (24h/7d/30d), before/after benchmarks |
 | **Analytics & Back-Test** | Data Scientists | 48-hour USGS Potomac storm event validation, lead-time metrics |
 | **FHIR R4 Exchange** | Health & IT Integrators | Live HAPI FHIR validation, canonical JSON schema export |
 
@@ -271,6 +251,17 @@ pnpm --filter @workspace/aquasentinel run dev
 
 ---
 
+## ⚠️ Honest Scope Boundaries & Limitations
+
+In accordance with our commitment to engineering integrity and transparent open-source science:
+
+1. **Physical Hardware vs Public Feeds**: Telemetry streams pull live data from USGS NWIS and Open-Meteo REST APIs with synthetic fallbacks. Enterprise municipal deployment requires physical edge LoRaWAN/MQTT sensor nodes installed on-site.
+2. **Media Storage**: Citizen photos persist as localized base64 data payloads in PostgreSQL. AWS S3 / Cloudflare R2 bucket integration is planned for high-volume production.
+3. **Advisory Decision Support**: Risk assessments and z-score anomaly projections provide rapid early warnings to guide field inspectors; they do not constitute legally binding regulatory citations or certified laboratory chemical assays.
+4. **Identity & SSO**: User roles (Citizen, Field Officer, Resilience Director) are demonstrated via client context gating. Enterprise OIDC/SAML single sign-on is planned for production municipal intranet deployments.
+
+---
+
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.

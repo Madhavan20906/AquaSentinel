@@ -50,6 +50,10 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Replit & Scaffolding
+.replit
+.replitignore
+replit.md
+attached_assets/
 .cache/
 .local/
