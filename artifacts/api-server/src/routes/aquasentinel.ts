@@ -617,6 +617,20 @@ router.post("/missions", async (req, res): Promise<void> => {
   res.status(201).json(CreateMissionResponse.parse(mapMission(created)));
 });
 
+router.post("/missions/:missionId/start", async (req, res): Promise<void> => {
+  await ensureDemoData();
+  const [updated] = await db
+    .update(missionsTable)
+    .set({ status: "in_progress" })
+    .where(eq(missionsTable.id, req.params.missionId))
+    .returning();
+  if (!updated) {
+    res.status(404).json({ error: "Mission not found" });
+    return;
+  }
+  res.json(mapMission(updated));
+});
+
 router.post("/missions/:missionId/complete", async (req, res): Promise<void> => {
   await ensureDemoData();
   const params = CompleteMissionParams.safeParse(req.params);

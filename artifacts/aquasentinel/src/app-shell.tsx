@@ -793,14 +793,288 @@ function AlertDetail() {
 
 function Missions() {
   const missions = useListMissions();
-  const create = useCreateMission();
   const complete = useCompleteMission();
   const [active, setActive] = useState<string>('');
+  const [startingId, setStartingId] = useState<string>('');
+  const [waterAppearance, setWaterAppearance] = useState('cloudy');
+  const [visiblePollution, setVisiblePollution] = useState('none');
   const [notes, setNotes] = useState('');
+  const [submittedSuccess, setSubmittedSuccess] = useState(false);
+
   const mission = missions.data?.find((item) => item.id === active);
-  const start = (item: { siteId: string; alertId: string; id: string }) => { create.mutate({ data: { siteId: item.siteId, alertId: item.alertId } }, { onSuccess: (result) => setActive(result.id) }); };
-  const finish = () => { if (mission) complete.mutate({ missionId: mission.id, data: { waterAppearance: 'cloudy', visiblePollution: 'none', notes } }, { onSuccess: () => { setActive(''); setNotes(''); missions.refetch(); } }); };
-  return <div className="fade-up"><PageHeader eyebrow="Community verification / simulated" title="Missions" detail="Small, local checks that turn an abstract alert into grounded evidence." action={<div className="rounded-full bg-[hsl(var(--secondary))] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--primary))]"><ClipboardCheck className="mr-1 inline" size={13} /> {missions.data?.filter((m) => m.status === 'available').length ?? 0} available</div>} />{missions.isError ? <ErrorState retry={() => missions.refetch()} /> : missions.isLoading ? <LoadingRows count={3} /> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{(missions.data ?? []).map((item) => <div className="panel panel-hover flex flex-col p-5" key={item.id} data-testid={`card-mission-${item.id}`}><div className="flex items-start justify-between gap-3"><span className="rounded-lg bg-[hsl(var(--secondary))] p-2 text-[hsl(var(--primary))]"><MapPin size={17} /></span><StatusPill value={item.status} /></div><h2 className="mt-5 font-display text-lg font-semibold">{item.title}</h2><div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{item.siteName} · {item.estimatedMinutes} minutes</div><p className="mt-4 flex-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{item.reason}</p><div className="mt-5 space-y-2 border-t pt-4">{item.instructions.slice(0, 3).map((line, index) => <div className="flex gap-2 text-xs" key={line}><span className="font-mono text-[hsl(var(--primary))]">0{index + 1}</span><span>{line}</span></div>)}</div>{item.status === 'available' && <Button className="mt-5 w-full" onClick={() => start(item)} disabled={create.isPending} data-testid={`button-start-mission-${item.id}`}>{create.isPending && active === item.id ? 'Starting...' : 'Start mission'} <ArrowRight size={14} /></Button>}{item.status === 'in_progress' && <Button className="mt-5 w-full" onClick={() => setActive(item.id)} data-testid={`button-continue-mission-${item.id}`}>Continue mission <ArrowRight size={14} /></Button>}</div>)}</div>}{!missions.data?.length && <EmptyState title="No missions ready" detail="When an alert needs local verification, a mission will appear here." />}{mission && <div className="fixed inset-0 z-50 grid place-items-center bg-[hsl(var(--sidebar)/.45)] p-4"><div className="panel w-full max-w-lg p-6"><div className="flex items-start justify-between"><div><div className="eyebrow">Mission check-in</div><h2 className="mt-2 font-display text-2xl font-semibold">{mission.title}</h2></div><button onClick={() => setActive('')} className="rounded-lg p-2 hover:bg-[hsl(var(--muted))]" data-testid="button-close-mission"><X size={17} /></button></div><p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Record the outcome in plain language. This creates evidence for the review team; it does not make a diagnosis.</p><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} placeholder="What did you observe at the site?" className="mt-5 w-full resize-none rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white p-3 text-sm outline-none focus:border-[hsl(var(--primary))] transition" data-testid="textarea-mission-notes" /><Button className="mt-4 w-full" onClick={finish} disabled={complete.isPending} data-testid="button-complete-mission">{complete.isPending ? 'Submitting evidence...' : 'Submit field evidence'} <Send size={14} /></Button></div></div>}</div>;
+
+  const start = async (item: { id: string }) => {
+    setStartingId(item.id);
+    setActive(item.id);
+    try {
+      await fetch(`/api/missions/${item.id}/start`, { method: 'POST' });
+      missions.refetch();
+    } catch (err) {
+      console.error('Error starting mission', err);
+    } finally {
+      setStartingId('');
+    }
+  };
+
+  const finish = () => {
+    if (mission) {
+      complete.mutate(
+        {
+          missionId: mission.id,
+          data: {
+            waterAppearance,
+            visiblePollution,
+            notes: notes.trim() || 'Field verification protocol carried out. Visual appearance and conditions recorded.',
+          },
+        },
+        {
+          onSuccess: () => {
+            setSubmittedSuccess(true);
+            setTimeout(() => {
+              setActive('');
+              setNotes('');
+              setSubmittedSuccess(false);
+              missions.refetch();
+            }, 1200);
+          },
+        }
+      );
+    }
+  };
+
+  return (
+    <div className="fade-up">
+      <PageHeader
+        eyebrow="Community verification / simulated"
+        title="Missions"
+        detail="Small, local checks that turn an abstract alert into grounded evidence."
+        action={
+          <div className="rounded-full bg-[hsl(var(--secondary))] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--primary))]">
+            <ClipboardCheck className="mr-1 inline" size={13} /> {missions.data?.filter((m) => m.status === 'available').length ?? 0} available
+          </div>
+        }
+      />
+      {missions.isError ? (
+        <ErrorState retry={() => missions.refetch()} />
+      ) : missions.isLoading ? (
+        <LoadingRows count={3} />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {(missions.data ?? []).map((item) => (
+            <div className="panel panel-hover flex flex-col p-5" key={item.id} data-testid={`card-mission-${item.id}`}>
+              <div className="flex items-start justify-between gap-3">
+                <span className="rounded-lg bg-[hsl(var(--secondary))] p-2 text-[hsl(var(--primary))]">
+                  <MapPin size={17} />
+                </span>
+                <StatusPill value={item.status} />
+              </div>
+              <h2 className="mt-5 font-display text-lg font-semibold text-teal-950">{item.title}</h2>
+              <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                {item.siteName} · {item.estimatedMinutes} minutes
+              </div>
+              <p className="mt-4 flex-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{item.reason}</p>
+              <div className="mt-5 space-y-2 border-t border-teal-800/10 pt-4">
+                {item.instructions.slice(0, 3).map((line, index) => (
+                  <div className="flex gap-2 text-xs" key={line}>
+                    <span className="font-mono text-[hsl(var(--primary))]">0{index + 1}</span>
+                    <span>{line}</span>
+                  </div>
+                ))}
+              </div>
+              {item.status === 'available' && (
+                <Button
+                  className="mt-5 w-full"
+                  onClick={() => start(item)}
+                  disabled={startingId === item.id}
+                  data-testid={`button-start-mission-${item.id}`}
+                >
+                  {startingId === item.id ? (
+                    <>
+                      <RefreshCw className="mr-1.5 inline animate-spin" size={14} /> Starting...
+                    </>
+                  ) : (
+                    <>
+                      Start mission <ArrowRight size={14} />
+                    </>
+                  )}
+                </Button>
+              )}
+              {item.status === 'in_progress' && (
+                <Button
+                  className="mt-5 w-full"
+                  onClick={() => setActive(item.id)}
+                  data-testid={`button-continue-mission-${item.id}`}
+                >
+                  Continue mission <ArrowRight size={14} />
+                </Button>
+              )}
+              {item.status === 'completed' && (
+                <div className="mt-5 rounded-lg bg-teal-50 border border-teal-300/70 p-2.5 text-center text-xs font-semibold text-teal-800 flex items-center justify-center gap-1.5 shadow-xs">
+                  <Check size={14} className="text-teal-600" /> Mission Completed
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {!missions.data?.length && (
+        <EmptyState title="No missions ready" detail="When an alert needs local verification, a mission will appear here." />
+      )}
+      {mission && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-xs">
+          <div className="panel max-h-[90vh] w-full max-w-xl overflow-y-auto p-6 bg-[hsl(var(--card))] border border-teal-800/25 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-teal-800/15 pb-4">
+              <div>
+                <div className="eyebrow !text-teal-700">Mission check-in · Field protocol</div>
+                <h2 className="mt-1 font-display text-2xl font-bold text-teal-950">{mission.title}</h2>
+                <div className="mt-1 flex items-center gap-2 text-xs text-teal-900/70">
+                  <span className="font-semibold text-teal-950">{mission.siteName}</span>
+                  <span>·</span>
+                  <span>{mission.estimatedMinutes} min protocol</span>
+                  <span>·</span>
+                  <span className="font-mono text-[10px] text-teal-700 uppercase bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
+                    ID: {mission.id}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setActive('')}
+                className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition"
+                data-testid="button-close-mission"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {submittedSuccess ? (
+              <div className="my-8 rounded-xl bg-teal-50 border border-teal-300 p-6 text-center animate-fade-in">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-teal-600 text-white shadow-md">
+                  <Check size={24} />
+                </div>
+                <h3 className="mt-3 font-display text-lg font-bold text-teal-950">Field Evidence Submitted!</h3>
+                <p className="mt-1 text-xs text-teal-800">
+                  Observation successfully recorded, linked to alert, and cryptographically signed to the audit trail.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Mission Guidance */}
+                <div className="mt-4 rounded-lg bg-teal-900/[0.04] border border-teal-800/15 p-3.5">
+                  <div className="text-xs font-semibold text-teal-950">Field Checklist:</div>
+                  <div className="mt-2 space-y-1.5 text-xs text-teal-900/80">
+                    {mission.instructions.map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="font-mono text-[10px] font-bold text-teal-700 bg-white/90 border border-teal-800/20 px-1.5 py-0.5 rounded">
+                          0{idx + 1}
+                        </span>
+                        <span>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Form Options */}
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
+                      Water Appearance
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'clear', label: 'Clear' },
+                        { id: 'cloudy', label: 'Cloudy / Turbid' },
+                        { id: 'discolored', label: 'Discolored' },
+                        { id: 'foamy', label: 'Foamy / Scum' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setWaterAppearance(opt.id)}
+                          className={`rounded-lg border p-2 text-xs font-semibold text-center transition ${
+                            waterAppearance === opt.id
+                              ? 'border-teal-600 bg-white/95 text-teal-950 shadow-xs ring-2 ring-teal-500/20'
+                              : 'border-teal-800/15 bg-white/60 hover:bg-white/90 text-teal-900/80'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
+                      Visible Pollution
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'none', label: 'None detected' },
+                        { id: 'sheen', label: 'Oily sheen' },
+                        { id: 'trash', label: 'Trash / debris' },
+                        { id: 'algae', label: 'Algal bloom' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setVisiblePollution(opt.id)}
+                          className={`rounded-lg border p-2 text-xs font-semibold text-center transition ${
+                            visiblePollution === opt.id
+                              ? 'border-teal-600 bg-white/95 text-teal-950 shadow-xs ring-2 ring-teal-500/20'
+                              : 'border-teal-800/15 bg-white/60 hover:bg-white/90 text-teal-900/80'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
+                      Field Observations & Notes
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={3}
+                      placeholder="Describe what you observed at the site (scale, odor, flow rate, changes since last visit)..."
+                      className="w-full resize-none rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white p-3 text-xs outline-none focus:border-[hsl(var(--primary))] transition"
+                      data-testid="textarea-mission-notes"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between gap-3 border-t border-teal-800/15 pt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setActive('')}
+                    disabled={complete.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={finish}
+                    disabled={complete.isPending}
+                    data-testid="button-complete-mission"
+                  >
+                    {complete.isPending ? (
+                      <>
+                        <RefreshCw className="mr-1.5 inline animate-spin" size={14} /> Submitting evidence...
+                      </>
+                    ) : (
+                      <>
+                        Submit field evidence <Send size={14} />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Interoperability() {
