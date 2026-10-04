@@ -9,7 +9,7 @@ services:
     name: aquasentinel
     runtime: node
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install && pnpm run build
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm run build
     startCommand: pnpm run db:push && pnpm run start
     healthCheckPath: /healthz
     envVars:
