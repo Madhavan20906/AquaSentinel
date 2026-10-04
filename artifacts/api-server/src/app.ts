@@ -17,6 +17,11 @@ import fs from "node:fs";
 // Serve persistent uploaded observation photos
 app.use("/uploads", express.static(path.resolve(process.cwd(), "public", "uploads")));
 
+// Health check route for cloud infrastructure (Render, ALB, etc.)
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/api", authMiddleware, router);
 
 // Serve static frontend build when present (unified single-service deployment)

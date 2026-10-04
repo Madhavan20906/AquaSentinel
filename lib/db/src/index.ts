@@ -10,7 +10,26 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const connectionString = process.env.DATABASE_URL;
+const isLocal =
+  connectionString.includes("localhost") ||
+  connectionString.includes("127.0.0.1");
+
+const hasSslQuery =
+  connectionString.includes("sslmode=") ||
+  connectionString.includes("ssl=true");
+
+const sslConfig =
+  process.env.DATABASE_SSL === "true" ||
+  (process.env.DATABASE_SSL !== "false" &&
+    (hasSslQuery || (process.env.NODE_ENV === "production" && !isLocal)))
+    ? { rejectUnauthorized: false }
+    : undefined;
+
+export const pool = new Pool({
+  connectionString,
+  ssl: sslConfig,
+});
 export const db = drizzle(pool, { schema });
 
 export * from "./schema";
