@@ -3,10 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { logger } from "./logger";
 
-const isVercel = Boolean(process.env.VERCEL);
-const UPLOADS_DIR = isVercel
-  ? path.join("/tmp", "uploads")
-  : path.resolve(process.cwd(), "public", "uploads");
+const UPLOADS_DIR = path.resolve(process.cwd(), "public", "uploads");
 
 // Ensure upload directory exists
 try {

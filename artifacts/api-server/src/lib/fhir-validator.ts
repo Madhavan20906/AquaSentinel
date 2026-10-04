@@ -76,6 +76,23 @@ export async function validateFhirResource(
   // 2. Local Strict HL7 FHIR R4 Validator (Deterministic fallback)
   const localIssues: FhirValidationIssue[] = [];
 
+  // Normalize legacy/simplified structures into canonical HL7 FHIR R4 schema
+  if (typeof resource.code === "string") {
+    resource.code = {
+      coding: [{ system: "https://aquasentinel.io/fhir/codes", code: resource.code, display: resource.code }],
+      text: resource.code,
+    };
+  }
+  if (typeof resource.subject === "string") {
+    resource.subject = {
+      reference: resource.subject.startsWith("Location/") ? resource.subject : `Location/${resource.subject}`,
+      display: resource.subject,
+    };
+  }
+  if (resourceType === "RiskAssessment" && !Array.isArray(resource.prediction) && typeof resource.prediction === "object" && resource.prediction !== null) {
+    resource.prediction = [resource.prediction];
+  }
+
   if (resourceType === "Observation") {
     if (!resource.status || !["registered", "preliminary", "final", "amended"].includes(resource.status)) {
       localIssues.push({ severity: "error", code: "required", diagnostics: "Observation.status must be a valid ObservationStatus code" });

@@ -23,6 +23,7 @@ import { FhirExportModal } from './components/FhirExportModal';
 import { WaterTwin, MeasurableImpactCard } from './components/WaterTwin';
 import { ModelValidationDashboard } from './components/ModelValidationDashboard';
 import { OneHealthWorkflow } from './components/OneHealthWorkflow';
+import { AquaSentinelLogo } from './components/AquaSentinelLogo';
 
 const navItems = [
   { href: '/dashboard', label: 'Intelligence', icon: Gauge },
@@ -82,10 +83,11 @@ function EmptyState({ title, detail, action }: { title: string; detail: string; 
 }
 
 function Logo({ light = false }: { light?: boolean }) {
-  return <Link href="/" className="flex items-center gap-2.5" data-testid="link-home">
-    <span className={`grid h-9 w-9 place-items-center rounded-xl ${light ? 'bg-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary-foreground))]' : 'bg-[hsl(var(--primary))] text-white'}`}><Waves size={19} strokeWidth={2.5} /></span>
-    <span className={`font-display text-[15px] font-bold tracking-tight ${light ? 'text-white' : 'text-[hsl(var(--foreground))]'}`}>Aqua<span className="text-[hsl(var(--accent))]">Sentinel</span></span>
-  </Link>;
+  return (
+    <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-95" data-testid="link-home">
+      <AquaSentinelLogo light={light} size="default" />
+    </Link>
+  );
 }
 
 function Shell({ children }: { children: ReactNode }) {
@@ -93,20 +95,64 @@ function Shell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [fhirModalOpen, setFhirModalOpen] = useState(false);
   return <div className="noise min-h-[100dvh] lg:flex">
-    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[252px] flex-col bg-[hsl(var(--sidebar))] text-slate-100 px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="px-2"><Logo light /></div>
-      <div className="mt-10 px-3"><div className="eyebrow !text-[hsl(var(--sidebar-primary))]">Operational loop</div><p className="mt-2 text-xs leading-5 text-[hsl(var(--sidebar-foreground)/.64)]">Observe → explain → decide<br />Human control stays in the loop.</p></div>
-      <nav className="mt-8 flex-1 space-y-1" aria-label="Primary navigation">
+      <div className="mt-8 px-3">
+        <div className="eyebrow !text-amber-300 font-bold tracking-wider">Operational loop</div>
+        <p className="mt-1.5 text-xs leading-5 text-teal-100/80">Observe → explain → decide<br />Human control stays in the loop.</p>
+      </div>
+      <nav className="mt-7 flex-1 space-y-1.5" aria-label="Primary navigation">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = location === href || (href === '/dashboard' && location.startsWith('/sites'));
-          return <Link key={href} href={href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${label.toLowerCase().replace(' ', '-')}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-white' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent)/.7)] hover:text-white'}`}><Icon size={17} strokeWidth={active ? 2.4 : 1.8} /><span>{label}</span>{active && <ChevronRight size={14} className="ml-auto text-[hsl(var(--sidebar-primary))]" />}</Link>;
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              data-testid={`link-nav-${label.toLowerCase().replace(' ', '-')}`}
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                active
+                  ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
+                  : 'text-slate-200 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <Icon
+                size={18}
+                strokeWidth={active ? 2.3 : 1.9}
+                className={active ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
+              />
+              <span>{label}</span>
+              {active && <ChevronRight size={15} className="ml-auto text-amber-300" />}
+            </Link>
+          );
         })}
-        <div className="my-5 border-t border-[hsl(var(--sidebar-border))]" />
-        <Link href="/settings" onClick={() => setMobileOpen(false)} data-testid="link-nav-settings" className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent)/.7)] hover:text-white ${location === '/settings' ? 'bg-[hsl(var(--sidebar-accent))] !text-white' : ''}`}><Settings2 size={17} /><span>Context & settings</span></Link>
+        <div className="my-4 border-t border-teal-800/60" />
+        <Link
+          href="/settings"
+          onClick={() => setMobileOpen(false)}
+          data-testid="link-nav-settings"
+          className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+            location === '/settings'
+              ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
+              : 'text-slate-200 hover:bg-white/10 hover:text-white'
+          }`}
+        >
+          <Settings2
+            size={18}
+            strokeWidth={location === '/settings' ? 2.3 : 1.9}
+            className={location === '/settings' ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
+          />
+          <span>Context & settings</span>
+          {location === '/settings' && <ChevronRight size={15} className="ml-auto text-amber-300" />}
+        </Link>
       </nav>
-      <div className="rounded-xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.55)] p-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-white"><span className="status-dot text-[hsl(var(--sidebar-primary))]" />Demo environment</div>
-        <p className="mt-2 text-[11px] leading-4 text-[hsl(var(--sidebar-foreground)/.62)]">Signals are simulated for this workspace. No live public-health action is triggered.</p>
+      <div className="rounded-xl border border-teal-800/60 bg-teal-950/40 p-3.5 backdrop-blur-xs">
+        <div className="flex items-center gap-2 text-xs font-semibold text-white">
+          <span className="status-dot text-emerald-400" />Demo environment
+        </div>
+        <p className="mt-1.5 text-[11px] leading-4 text-teal-100/75">
+          Signals are simulated for this workspace. No live public-health action is triggered.
+        </p>
       </div>
     </aside>
     {mobileOpen && <button aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-30 bg-[hsl(var(--sidebar)/.35)] lg:hidden" data-testid="button-close-navigation"><X className="absolute right-4 top-4 text-white" /></button>}
@@ -734,18 +780,85 @@ function Interoperability() {
   const runValidation = async () => {
     setValidating(true);
     try {
-      const targetResource = rows[0] || {
-        resourceType: tab,
-        id: `${tab.toLowerCase()}-demo`,
-        status: 'final',
-        code: {
-          coding: [{ system: 'http://loinc.org', code: '14788-4', display: 'Water turbidity' }],
-          text: 'Turbidity observation',
-        },
-        subject: { reference: 'Location/ADYAR-01' },
-        effectiveDateTime: new Date().toISOString(),
-        valueQuantity: { value: 78, unit: '%', system: 'http://unitsofmeasure.org', code: '%' },
-      };
+      let targetResource: any = null;
+      try {
+        const canonicalRes = await fetch(`/api/fhir/r4/${tab}`);
+        if (canonicalRes.ok) {
+          const canonicalList = await canonicalRes.json();
+          if (Array.isArray(canonicalList) && canonicalList.length > 0) {
+            targetResource = canonicalList[0];
+          }
+        }
+      } catch {}
+
+      if (!targetResource) {
+        if (tab === 'Observation') {
+          const first = rows[0] as any;
+          targetResource = {
+            resourceType: 'Observation',
+            id: first?.id ?? 'obs-canonical-01',
+            status: 'final',
+            category: [
+              {
+                coding: [
+                  {
+                    system: 'http://terminology.hl7.org/CodeSystem/observation-category',
+                    code: 'activity',
+                    display: 'Activity',
+                  },
+                ],
+              },
+            ],
+            code: {
+              coding: [
+                { system: 'http://loinc.org', code: '14788-4', display: 'Water turbidity' },
+                { system: 'https://aquasentinel.io/fhir/codes', code: 'environmental-observation', display: 'Community Environmental Observation' },
+              ],
+              text: 'Community stream quality observation',
+            },
+            subject: {
+              reference: `Location/${first?.location ?? 'ADYAR-01'}`,
+              display: 'Adyar River Monitoring Basin',
+            },
+            effectiveDateTime: first?.effectiveDateTime ?? new Date().toISOString(),
+            valueQuantity: {
+              value: typeof first?.value === 'number' ? first.value : 78,
+              unit: '%',
+              system: 'http://unitsofmeasure.org',
+              code: '%',
+            },
+          };
+        } else {
+          const first = rows[0] as any;
+          targetResource = {
+            resourceType: 'RiskAssessment',
+            id: first?.id ?? 'risk-canonical-01',
+            status: 'final',
+            subject: {
+              reference: `Location/${first?.subject ?? 'ADYAR-01'}`,
+              display: 'Adyar River Basin',
+            },
+            occurrenceDateTime: first?.occurrenceDateTime ?? new Date().toISOString(),
+            prediction: [
+              {
+                outcome: {
+                  text: first?.prediction?.outcome ?? 'Potential environmental ecosystem stress',
+                },
+                probabilityDecimal: first?.prediction?.probability ?? 0.65,
+                qualitativeRisk: {
+                  coding: [
+                    {
+                      system: 'http://terminology.hl7.org/CodeSystem/risk-probability',
+                      code: 'moderate',
+                      display: 'Moderate Risk',
+                    },
+                  ],
+                },
+              },
+            ],
+          };
+        }
+      }
 
       const res = await fetch('/api/fhir/validate', {
         method: 'POST',
@@ -786,11 +899,11 @@ function Interoperability() {
 
     {/* Live FHIR Validation Result Badge */}
     {validationResult && (
-      <div className={`mb-6 rounded-xl border p-4 text-xs ${validationResult.valid ? 'border-teal-300 bg-teal-50/80 text-teal-950' : 'border-rose-300 bg-rose-50 text-rose-950'}`}>
+      <div className={`mb-6 rounded-xl border p-4 text-xs transition-all ${validationResult.valid ? 'border-teal-300 bg-teal-50/90 text-teal-950 shadow-xs' : 'border-rose-300 bg-rose-50/90 text-rose-950 shadow-xs'}`}>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
-          <div className="flex items-center gap-2 font-bold">
-            <ShieldCheck size={16} className="text-teal-600" />
-            HL7 FHIR R4 Conformance: {validationResult.status}
+          <div className="flex items-center gap-2 font-bold text-sm">
+            <ShieldCheck size={18} className={validationResult.valid ? 'text-teal-600' : 'text-rose-600'} />
+            HL7 FHIR R4 Conformance: <span className={validationResult.valid ? 'text-teal-700' : 'text-rose-700'}>{validationResult.status}</span>
           </div>
           <span className="font-mono text-[10px] text-slate-500">
             Validator: {validationResult.validatorEngine} · FHIR v{validationResult.fhirVersion}
@@ -804,7 +917,7 @@ function Interoperability() {
         {validationResult.issues && (
           <div className="mt-2 space-y-1">
             {validationResult.issues.map((issue: any, idx: number) => (
-              <div key={idx} className="font-mono text-[10px] text-teal-800">
+              <div key={idx} className={`font-mono text-[11px] ${issue.severity === 'error' ? 'text-rose-700 font-semibold' : 'text-teal-800'}`}>
                 • [{issue.severity.toUpperCase()}] {issue.diagnostics}
               </div>
             ))}

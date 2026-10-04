@@ -6,10 +6,7 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-const isVercel = Boolean(process.env.VERCEL);
-const UPLOADS_DIR = isVercel
-  ? path.join("/tmp", "uploads")
-  : path.resolve(process.cwd(), "public", "uploads");
+const UPLOADS_DIR = path.resolve(process.cwd(), "public", "uploads");
 
 try {
   if (!fs.existsSync(UPLOADS_DIR)) {
