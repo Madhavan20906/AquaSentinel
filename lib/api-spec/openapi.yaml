@@ -772,37 +772,67 @@ components:
       required: [siteId]
       properties:
         siteId: { type: string }
+    FhirCoding:
+      type: object
+      properties:
+        system: { type: string }
+        code: { type: string, minLength: 1 }
+        display: { type: string }
+    FhirCodeableConcept:
+      type: object
+      required: [coding]
+      properties:
+        coding:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/FhirCoding' }
+        text: { type: string }
+    FhirReference:
+      type: object
+      required: [reference]
+      properties:
+        reference: { type: string, minLength: 1 }
+        display: { type: string }
     FhirObservation:
       type: object
-      required: [resourceType, id, status, code, subject, effectiveDateTime, value, unit, location, interpretation]
+      required: [resourceType, id, status, code, subject, effectiveDateTime, valueString]
       properties:
         resourceType: { type: string, const: Observation }
         id: { type: string }
         status: { type: string }
-        code: { type: string }
-        subject: { type: string }
-        effectiveDateTime: { type: string }
-        value: { type: number }
-        unit: { type: string }
-        location: { type: string }
-        interpretation: { type: string }
+        code: { $ref: '#/components/schemas/FhirCodeableConcept' }
+        subject: { $ref: '#/components/schemas/FhirReference' }
+        effectiveDateTime: { type: string, format: date-time }
+        valueString: { type: string }
+        note:
+          type: array
+          items:
+            type: object
+            required: [text]
+            properties:
+              text: { type: string }
+    FhirRiskAssessmentPrediction:
+      type: object
+      required: [outcome, probabilityDecimal, qualitativeRisk]
+      properties:
+        outcome: { $ref: '#/components/schemas/FhirCodeableConcept' }
+        probabilityDecimal: { type: number, minimum: 0, maximum: 1 }
+        qualitativeRisk: { $ref: '#/components/schemas/FhirCodeableConcept' }
+        rationale: { type: string }
     FhirRiskAssessment:
       type: object
-      required: [resourceType, id, status, subject, occurrenceDateTime, prediction, basis]
+      required: [resourceType, id, status, code, subject, occurrenceDateTime, prediction]
       properties:
         resourceType: { type: string, const: RiskAssessment }
         id: { type: string }
         status: { type: string }
-        subject: { type: string }
-        occurrenceDateTime: { type: string }
+        code: { $ref: '#/components/schemas/FhirCodeableConcept' }
+        subject: { $ref: '#/components/schemas/FhirReference' }
+        occurrenceDateTime: { type: string, format: date-time }
         prediction:
-          type: object
-          required: [outcome, probability, qualitativeRisk]
-          properties:
-            outcome: { type: string }
-            probability: { type: number }
-            qualitativeRisk: { type: string }
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/FhirRiskAssessmentPrediction' }
         basis:
           type: array
-          items: { type: string }
-
+          items: { $ref: '#/components/schemas/FhirReference' }

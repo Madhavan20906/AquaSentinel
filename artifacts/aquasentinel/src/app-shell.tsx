@@ -93,10 +93,10 @@ function Shell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [fhirModalOpen, setFhirModalOpen] = useState(false);
   return <div className="noise min-h-[100dvh] lg:flex">
-    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed inset-y-0 left-0 z-40 flex h-dvh max-h-dvh w-[248px] shrink-0 flex-col overflow-hidden bg-[hsl(var(--sidebar))] px-4 py-5 transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="px-2"><Logo light /></div>
       <div className="mt-10 px-3"><div className="eyebrow !text-[hsl(var(--sidebar-primary))]">Operational loop</div><p className="mt-2 text-xs leading-5 text-[hsl(var(--sidebar-foreground)/.64)]">Observe → explain → decide<br />Human control stays in the loop.</p></div>
-      <nav className="mt-8 flex-1 space-y-1" aria-label="Primary navigation">
+      <nav className="mt-8 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pb-2 pr-1" aria-label="Primary navigation">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = location === href || (href === '/dashboard' && location.startsWith('/sites'));
           return <Link key={href} href={href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${label.toLowerCase().replace(' ', '-')}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-white' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent)/.7)] hover:text-white'}`}><Icon size={17} strokeWidth={active ? 2.4 : 1.8} /><span>{label}</span>{active && <ChevronRight size={14} className="ml-auto text-[hsl(var(--sidebar-primary))]" />}</Link>;
@@ -120,7 +120,7 @@ function Shell({ children }: { children: ReactNode }) {
             title="Export canonical HL7 FHIR R4 records to municipal EHR or public health systems"
           >
             <Database size={13} className="text-teal-700" />
-            <span className="hidden sm:inline">Export to Health System</span> (FHIR R4)
+            <span className="hidden sm:inline">Preview FHIR Export</span> (FHIR R4)
           </button>
           <span className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className="status-dot text-teal-600" />All systems nominal</span><button className="rounded-full border border-[hsl(var(--border))] bg-white px-2.5 py-1.5 text-xs font-semibold hover:bg-[hsl(var(--secondary))]" data-testid="button-user-menu">EA <span className="hidden sm:inline">/ Environmental analyst</span></button>
         </div>
@@ -723,41 +723,60 @@ function Missions() {
   return <div className="fade-up"><PageHeader eyebrow="Community verification / simulated" title="Missions" detail="Small, local checks that turn an abstract alert into grounded evidence." action={<div className="rounded-full bg-[hsl(var(--secondary))] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--primary))]"><ClipboardCheck className="mr-1 inline" size={13} /> {missions.data?.filter((m) => m.status === 'available').length ?? 0} available</div>} />{missions.isError ? <ErrorState retry={() => missions.refetch()} /> : missions.isLoading ? <LoadingRows count={3} /> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{(missions.data ?? []).map((item) => <div className="panel panel-hover flex flex-col p-5" key={item.id} data-testid={`card-mission-${item.id}`}><div className="flex items-start justify-between gap-3"><span className="rounded-lg bg-[hsl(var(--secondary))] p-2 text-[hsl(var(--primary))]"><MapPin size={17} /></span><StatusPill value={item.status} /></div><h2 className="mt-5 font-display text-lg font-semibold">{item.title}</h2><div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{item.siteName} · {item.estimatedMinutes} minutes</div><p className="mt-4 flex-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{item.reason}</p><div className="mt-5 space-y-2 border-t pt-4">{item.instructions.slice(0, 3).map((line, index) => <div className="flex gap-2 text-xs" key={line}><span className="font-mono text-[hsl(var(--primary))]">0{index + 1}</span><span>{line}</span></div>)}</div>{item.status === 'available' && <Button className="mt-5 w-full" onClick={() => start(item)} disabled={create.isPending} data-testid={`button-start-mission-${item.id}`}>{create.isPending && active === item.id ? 'Starting...' : 'Start mission'} <ArrowRight size={14} /></Button>}{item.status === 'in_progress' && <Button className="mt-5 w-full" onClick={() => setActive(item.id)} data-testid={`button-continue-mission-${item.id}`}>Continue mission <ArrowRight size={14} /></Button>}</div>)}</div>}{!missions.data?.length && <EmptyState title="No missions ready" detail="When an alert needs local verification, a mission will appear here." />}{mission && <div className="fixed inset-0 z-50 grid place-items-center bg-[hsl(var(--sidebar)/.45)] p-4"><div className="panel w-full max-w-lg p-6"><div className="flex items-start justify-between"><div><div className="eyebrow">Mission check-in</div><h2 className="mt-2 font-display text-2xl font-semibold">{mission.title}</h2></div><button onClick={() => setActive('')} className="rounded-lg p-2 hover:bg-[hsl(var(--muted))]" data-testid="button-close-mission"><X size={17} /></button></div><p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Record the outcome in plain language. This creates evidence for the review team; it does not make a diagnosis.</p><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} placeholder="What did you observe at the site?" className="mt-5 w-full resize-none rounded-lg border bg-white p-3 text-sm outline-none focus:border-[hsl(var(--primary))]" data-testid="textarea-mission-notes" /><Button className="mt-4 w-full" onClick={finish} disabled={complete.isPending} data-testid="button-complete-mission">{complete.isPending ? 'Submitting evidence...' : 'Submit field evidence'} <Send size={14} /></Button></div></div>}</div>;
 }
 
+type InteropFhirValidationResult = {
+  valid: boolean;
+  status: string;
+  validatorEngine: string;
+  fhirVersion: string;
+  issues: { severity: string; diagnostics: string }[];
+};
+
 function Interoperability() {
   const observations = useListFhirObservations();
   const risks = useListFhirRiskAssessments();
   const [tab, setTab] = useState<'Observation' | 'RiskAssessment'>('Observation');
   const [validating, setValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<any>(null);
+  const [validationResult, setValidationResult] = useState<InteropFhirValidationResult | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const rows = tab === 'Observation' ? observations.data ?? [] : risks.data ?? [];
 
   const runValidation = async () => {
     setValidating(true);
+    setValidationError(null);
+    setValidationResult(null);
     try {
-      const targetResource = rows[0] || {
-        resourceType: tab,
-        id: `${tab.toLowerCase()}-demo`,
-        status: 'final',
-        code: {
-          coding: [{ system: 'http://loinc.org', code: '14788-4', display: 'Water turbidity' }],
-          text: 'Turbidity observation',
-        },
-        subject: { reference: 'Location/ADYAR-01' },
-        effectiveDateTime: new Date().toISOString(),
-        valueQuantity: { value: 78, unit: '%', system: 'http://unitsofmeasure.org', code: '%' },
-      };
-
-      const res = await fetch('/api/fhir/validate', {
+      const fallbackResource = tab === 'Observation'
+        ? {
+            resourceType: 'Observation',
+            id: 'obs-demo',
+            status: 'final',
+            code: { coding: [{ system: 'https://aquasentinel.io/fhir/codes', code: 'community-environmental-observation', display: 'Community environmental observation' }], text: 'Sample community water-quality observation' },
+            subject: { reference: 'Location/ADYAR-01', display: 'Adyar Bridge' },
+            effectiveDateTime: new Date().toISOString(),
+            valueString: 'Sample resource used only when the collection is empty.',
+          }
+        : {
+            resourceType: 'RiskAssessment',
+            id: 'risk-demo',
+            status: 'preliminary',
+            code: { coding: [{ system: 'https://aquasentinel.io/fhir/codes', code: 'watershed-ecosystem-stress-risk', display: 'Watershed ecosystem stress risk assessment' }] },
+            subject: { reference: 'Location/ADYAR-01', display: 'Adyar Bridge' },
+            occurrenceDateTime: new Date().toISOString(),
+            prediction: [{ outcome: { text: 'Sample environmental ecosystem stress' }, probabilityDecimal: 0.42, qualitativeRisk: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/risk-probability', code: 'low', display: 'Low' }] } }],
+          };
+      const targetResource = rows[0] ?? fallbackResource;
+      const response = await fetch('/api/fhir/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(targetResource),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setValidationResult(data);
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(typeof result?.error === 'string' ? result.error : 'FHIR validator returned HTTP ' + response.status);
       }
+      setValidationResult(result);
     } catch (err) {
-      console.error('FHIR validation error', err);
+      setValidationError(err instanceof Error ? err.message : 'FHIR validation could not be completed.');
     } finally {
       setValidating(false);
     }
@@ -769,27 +788,31 @@ function Interoperability() {
     <PageHeader
       eyebrow="Interoperability / HL7 FHIR R4"
       title="FHIR R4 Resource Exchange"
-      detail="A verified view of environmental observations and risk assessments structured according to HL7 FHIR R4 specifications for municipal and public-health interoperability."
+      detail="Inspect environmental observations and risk assessments as FHIR R4 resources, then validate a resource with the available validator."
       action={
         <div className="flex items-center gap-2">
           <Button variant="primary" onClick={() => setExportModalOpen(true)}>
-            <Database size={14} /> Export to Health System
+            <Database size={14} /> Preview FHIR Export
           </Button>
-          <Button variant="secondary" onClick={runValidation} disabled={validating}>
+          <Button variant="secondary" onClick={runValidation} disabled={validating || observations.isLoading || risks.isLoading}>
             <ShieldCheck size={14} className={validating ? 'animate-spin' : 'text-teal-600'} />
-            {validating ? 'Validating against HAPI...' : 'Validate with HAPI FHIR R4'}
+            {validating ? 'Validating FHIR R4 resource...' : 'Validate FHIR R4 resource'}
           </Button>
         </div>
       }
     />
     <FhirExportModal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} />
 
-    {/* Live FHIR Validation Result Badge */}
+    {validationError && (
+      <div role="alert" className="mb-4 rounded-xl border border-rose-300 bg-rose-50 p-4 text-xs text-rose-900">
+        FHIR validation request failed: {validationError}
+      </div>
+    )}
     {validationResult && (
-      <div className={`mb-6 rounded-xl border p-4 text-xs ${validationResult.valid ? 'border-teal-300 bg-teal-50/80 text-teal-950' : 'border-rose-300 bg-rose-50 text-rose-950'}`}>
+      <div role="status" className={"mb-6 rounded-xl border p-4 text-xs " + (validationResult.valid ? "border-teal-300 bg-teal-50/80 text-teal-950" : "border-rose-300 bg-rose-50 text-rose-950")}>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
           <div className="flex items-center gap-2 font-bold">
-            <ShieldCheck size={16} className="text-teal-600" />
+            <ShieldCheck size={16} className={validationResult.valid ? "text-teal-600" : "text-rose-600"} />
             HL7 FHIR R4 Conformance: {validationResult.status}
           </div>
           <span className="font-mono text-[10px] text-slate-500">
@@ -798,13 +821,13 @@ function Interoperability() {
         </div>
         <p className="mt-2 text-xs leading-5">
           {validationResult.valid
-            ? '✓ Passed HL7 FHIR R4 schema verification with 0 fatal errors. Observations and RiskAssessments conform to canonical resource definitions.'
-            : 'Schema issues detected during validation pass.'}
+            ? "Resource passed the available FHIR R4 validator checks."
+            : "The validator found errors; review the diagnostics below."}
         </p>
-        {validationResult.issues && (
+        {validationResult.issues.length > 0 && (
           <div className="mt-2 space-y-1">
-            {validationResult.issues.map((issue: any, idx: number) => (
-              <div key={idx} className="font-mono text-[10px] text-teal-800">
+            {validationResult.issues.map((issue, idx) => (
+              <div key={idx} className={"font-mono text-[10px] " + (issue.severity === "error" || issue.severity === "fatal" ? "text-rose-800" : issue.severity === "warning" ? "text-amber-800" : "text-slate-700")}>
                 • [{issue.severity.toUpperCase()}] {issue.diagnostics}
               </div>
             ))}
@@ -830,10 +853,10 @@ function Interoperability() {
       ) : rows.length ? (
         <div className="divide-y">
           {rows.map((row) => (
-            <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr_auto] md:items-center" key={row.id} data-testid={`row-fhir-${row.id}`}>
+            <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr] md:items-center" key={row.id} data-testid={`row-fhir-${row.id}`}>
               <div>
                 <div className="font-mono text-xs font-semibold text-[hsl(var(--primary))]">{row.resourceType}/{row.id}</div>
-                <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{'subject' in row ? row.subject : ''}</div>
+                <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{row.subject.reference}</div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
                 <div>
@@ -842,16 +865,14 @@ function Interoperability() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Code / outcome</div>
-                  <div className="mt-1 truncate font-mono">{'code' in row ? row.code : row.prediction.outcome}</div>
+                  <div className="mt-1 truncate font-mono">{row.resourceType === 'Observation' ? (row.code.text ?? row.code.coding.map((coding) => coding.display ?? coding.code).join(', ')) : (row.prediction[0]?.outcome.text ?? row.prediction[0]?.outcome.coding.map((coding) => coding.display ?? coding.code).join(', '))}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Effective</div>
                   <div className="mt-1 font-mono">{formatTime('effectiveDateTime' in row ? row.effectiveDateTime : row.occurrenceDateTime)}</div>
                 </div>
               </div>
-              <button className="justify-self-start rounded-md p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]" data-testid={`button-open-fhir-${row.id}`}>
-                <ChevronRight size={16} />
-              </button>
+
             </div>
           ))}
         </div>

@@ -604,13 +604,21 @@ export const ListFhirObservationsResponseItem = zod.object({
   "resourceType": zod.literal("Observation"),
   "id": zod.string(),
   "status": zod.string(),
-  "code": zod.string(),
-  "subject": zod.string(),
+  "code": zod.object({
+    "coding": zod.array(zod.object({
+      "system": zod.string().optional(),
+      "code": zod.string().min(1),
+      "display": zod.string().optional()
+    })).min(1),
+    "text": zod.string().optional()
+  }),
+  "subject": zod.object({
+    "reference": zod.string().min(1),
+    "display": zod.string().optional()
+  }),
   "effectiveDateTime": zod.string(),
-  "value": zod.number(),
-  "unit": zod.string(),
-  "location": zod.string(),
-  "interpretation": zod.string()
+  "valueString": zod.string(),
+  "note": zod.array(zod.object({ "text": zod.string() })).optional()
 })
 export const ListFhirObservationsResponse = zod.array(ListFhirObservationsResponseItem)
 
@@ -622,14 +630,43 @@ export const ListFhirRiskAssessmentsResponseItem = zod.object({
   "resourceType": zod.literal("RiskAssessment"),
   "id": zod.string(),
   "status": zod.string(),
-  "subject": zod.string(),
+  "code": zod.object({
+    "coding": zod.array(zod.object({
+      "system": zod.string().optional(),
+      "code": zod.string().min(1),
+      "display": zod.string().optional()
+    })).min(1),
+    "text": zod.string().optional()
+  }),
+  "subject": zod.object({
+    "reference": zod.string().min(1),
+    "display": zod.string().optional()
+  }),
   "occurrenceDateTime": zod.string(),
-  "prediction": zod.object({
-  "outcome": zod.string(),
-  "probability": zod.number(),
-  "qualitativeRisk": zod.string()
-}),
-  "basis": zod.array(zod.string())
+  "prediction": zod.array(zod.object({
+    "outcome": zod.object({
+      "coding": zod.array(zod.object({
+        "system": zod.string().optional(),
+        "code": zod.string().min(1),
+        "display": zod.string().optional()
+      })).min(1),
+      "text": zod.string().optional()
+    }),
+    "probabilityDecimal": zod.number().min(0).max(1),
+    "qualitativeRisk": zod.object({
+      "coding": zod.array(zod.object({
+        "system": zod.string().optional(),
+        "code": zod.string().min(1),
+        "display": zod.string().optional()
+      })).min(1),
+      "text": zod.string().optional()
+    }),
+    "rationale": zod.string().optional()
+  })).min(1),
+  "basis": zod.array(zod.object({
+    "reference": zod.string().min(1),
+    "display": zod.string().optional()
+  })).optional()
 })
 export const ListFhirRiskAssessmentsResponse = zod.array(ListFhirRiskAssessmentsResponseItem)
 

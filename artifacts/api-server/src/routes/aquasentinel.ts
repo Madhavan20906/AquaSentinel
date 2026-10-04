@@ -7,6 +7,7 @@ import { saveMediaFile } from "../lib/media-upload";
 import { defaultEnvironmentalDataSource } from "../lib/environmental-data-source";
 import { getHistoricalStormBacktest } from "../lib/backtest-service";
 import { validateFhirResource } from "../lib/fhir-validator";
+import { toFhirObservation, toFhirRiskAssessment } from "../lib/fhir-resources";
 import { evaluateAquaSentinelModel, completeBenchmarkCorpus } from "../lib/benchmark-evaluation-engine";
 import { getNextAuditBlockMetadata, verifyAuditChainIntegrity } from "../lib/audit-chain";
 import {
@@ -703,41 +704,13 @@ router.post("/risk/analyze", async (req, res): Promise<void> => {
 router.get("/fhir/Observation", async (_req, res): Promise<void> => {
   await ensureDemoData();
   const observations = await db.select().from(observationsTable).orderBy(desc(observationsTable.createdAt));
-  const resources = observations.map((observation) => {
-    const responses = asRecord(observation.responses);
-    return {
-      resourceType: "Observation" as const,
-      id: observation.id,
-      status: "final",
-      code: "environmental-observation",
-      subject: "citizen-scientist",
-      effectiveDateTime: observation.createdAt.toISOString(),
-      value: observation.aiConfidence,
-      unit: "confidence-score",
-      location: observation.siteId,
-      interpretation: String(responses.waterAppearance ?? "unclassified"),
-    };
-  });
-  res.json(ListFhirObservationsResponse.parse(resources));
+  res.json(ListFhirObservationsResponse.parse(observations.map(toFhirObservation)));
 });
 
 router.get("/fhir/RiskAssessment", async (_req, res): Promise<void> => {
   await ensureDemoData();
   const sites = await db.select().from(sitesTable);
-  const resources = sites.map((site) => ({
-    resourceType: "RiskAssessment" as const,
-    id: `risk-${site.id}`,
-    status: "preliminary",
-    subject: site.id,
-    occurrenceDateTime: site.lastUpdated,
-    prediction: {
-      outcome: "Potential environmental ecosystem stress",
-      probability: site.risk / 100,
-      qualitativeRisk: site.status,
-    },
-    basis: ["Environmental anomaly", "Citizen evidence", "Weather context", "Biodiversity signal"],
-  }));
-  res.json(ListFhirRiskAssessmentsResponse.parse(resources));
+  res.json(ListFhirRiskAssessmentsResponse.parse(sites.map(toFhirRiskAssessment)));
 });
 
 // 1. Real Weather API (Open-Meteo Integration)
@@ -910,97 +883,13 @@ router.post("/fhir/validate", async (req, res): Promise<void> => {
 router.get("/fhir/r4/Observation", async (_req, res): Promise<void> => {
   await ensureDemoData();
   const observations = await db.select().from(observationsTable).orderBy(desc(observationsTable.createdAt));
-  const r4Resources = observations.map((obs) => {
-    const responses = asRecord(obs.responses);
-    return {
-      resourceType: "Observation" as const,
-      id: obs.id,
-      status: "final",
-      category: [
-        {
-          coding: [
-            {
-              system: "http://terminology.hl7.org/CodeSystem/observation-category",
-              code: "activity",
-              display: "Activity",
-            },
-          ],
-        },
-      ],
-      code: {
-        coding: [
-          { system: "http://loinc.org", code: "14788-4", display: "Water turbidity" },
-          { system: "https://aquasentinel.io/fhir/codes", code: "environmental-observation", display: "Community Environmental Observation" },
-        ],
-        text: "Community stream quality observation",
-      },
-      subject: {
-        reference: `Location/${obs.siteId}`,
-        display: obs.siteName,
-      },
-      effectiveDateTime: obs.createdAt.toISOString(),
-      valueQuantity: {
-        value: obs.aiConfidence,
-        unit: "%",
-        system: "http://unitsofmeasure.org",
-        code: "%",
-      },
-      interpretation: [
-        {
-          coding: [
-            {
-              system: "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-              code: obs.aiConfidence > 75 ? "A" : "N",
-              display: obs.aiConfidence > 75 ? "Abnormal" : "Normal",
-            },
-          ],
-          text: String(responses.waterAppearance || "unclassified"),
-        },
-      ],
-      note: [{ text: String(responses.notes || "Field observation verified by AI triage.") }],
-    };
-  });
-  res.json(r4Resources);
+  res.json(ListFhirObservationsResponse.parse(observations.map(toFhirObservation)));
 });
 
 router.get("/fhir/r4/RiskAssessment", async (_req, res): Promise<void> => {
   await ensureDemoData();
   const sites = await db.select().from(sitesTable);
-  const r4Risks = sites.map((site) => ({
-    resourceType: "RiskAssessment" as const,
-    id: `risk-${site.id}`,
-    status: "preliminary",
-    code: {
-      coding: [
-        { system: "http://snomed.info/sct", code: "704128003", display: "Environmental risk assessment" },
-      ],
-      text: "Urban watershed ecosystem stress assessment",
-    },
-    subject: {
-      reference: `Location/${site.id}`,
-      display: site.name,
-    },
-    occurrenceDateTime: site.lastUpdated,
-    prediction: [
-      {
-        outcome: { text: "Potential environmental ecosystem stress" },
-        probabilityDecimal: parseFloat((site.risk / 100).toFixed(2)),
-        qualitativeRisk: {
-          coding: [
-            {
-              system: "http://terminology.hl7.org/CodeSystem/risk-probability",
-              code: site.status,
-              display: site.status.toUpperCase(),
-            },
-          ],
-        },
-      },
-    ],
-    basis: [
-      { reference: `Observation/obs-${site.id.toLowerCase()}`, display: "Water quality and turbidity sensors" },
-    ],
-  }));
-  res.json(r4Risks);
+  res.json(ListFhirRiskAssessmentsResponse.parse(sites.map(toFhirRiskAssessment)));
 });
 
 export default router;

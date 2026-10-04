@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { RollingZScoreAnomalyDetector } from "../../artifacts/api-server/src/lib/anomaly-detector";
 import { getHistoricalStormBacktest } from "../../artifacts/api-server/src/lib/backtest-service";
 import { validateFhirResource } from "../../artifacts/api-server/src/lib/fhir-validator";
+import { toFhirObservation, toFhirRiskAssessment } from "../../artifacts/api-server/src/lib/fhir-resources";
+import { ListFhirObservationsResponse, ListFhirRiskAssessmentsResponse } from "../../lib/api-zod/src/generated/api";
 import { dispatchAlertNotifications, notificationHistory } from "../../artifacts/api-server/src/lib/notifications";
 import { SimulatedDataSource } from "../../artifacts/api-server/src/lib/environmental-data-source";
 import { evaluateAquaSentinelModel, completeBenchmarkCorpus } from "../../artifacts/api-server/src/lib/benchmark-evaluation-engine";
@@ -116,6 +118,40 @@ async function runTestSuite() {
     };
     const result = await validateFhirResource(invalidObservation);
     assert.equal(result.valid, false, "Must reject invalid status and missing fields");
+  });
+
+  await test("FHIR API serializers: Observation and RiskAssessment use R4 object shapes", () => {
+    const observation = toFhirObservation({
+      id: "obs-regression-01",
+      siteId: "ADYAR-01",
+      siteName: "Adyar Bridge",
+      createdAt: "2026-01-02T03:04:05.000Z",
+      responses: {
+        waterAppearance: "clear",
+        unusualSmell: "none",
+        visiblePollution: "none",
+        notes: "Regression fixture",
+      },
+    });
+    const parsedObservation = ListFhirObservationsResponse.parse([observation])[0];
+    assert.ok(parsedObservation);
+    assert.equal(parsedObservation.code.coding[0]?.code, "community-environmental-observation");
+    assert.equal(parsedObservation.subject.reference, "Location/ADYAR-01");
+    assert.equal(parsedObservation.valueString.includes("Water appearance: clear"), true);
+
+    const riskAssessment = toFhirRiskAssessment({
+      id: "ADYAR-01",
+      name: "Adyar Bridge",
+      risk: 82,
+      lastUpdated: "2026-01-02T03:04:05.000Z",
+    });
+    const parsedRisk = ListFhirRiskAssessmentsResponse.parse([riskAssessment])[0];
+    assert.ok(parsedRisk);
+    assert.equal(parsedRisk.subject.reference, "Location/ADYAR-01");
+    assert.equal(parsedRisk.prediction.length, 1);
+    assert.equal(parsedRisk.prediction[0]?.probabilityDecimal, 0.82);
+
+    assert.throws(() => ListFhirObservationsResponse.parse([{ ...observation, code: "legacy string code" }]));
   });
 
   // 5. Historical Storm Dataset Back-Test

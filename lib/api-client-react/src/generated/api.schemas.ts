@@ -378,33 +378,49 @@ export interface RiskInput {
   siteId: string;
 }
 
+export interface FhirCoding {
+  system?: string;
+  code: string;
+  display?: string;
+}
+
+export interface FhirCodeableConcept {
+  coding: FhirCoding[];
+  text?: string;
+}
+
+export interface FhirReference {
+  reference: string;
+  display?: string;
+}
+
 export interface FhirObservation {
   resourceType: 'Observation';
   id: string;
   status: string;
-  code: string;
-  subject: string;
+  code: FhirCodeableConcept;
+  subject: FhirReference;
   effectiveDateTime: string;
-  value: number;
-  unit: string;
-  location: string;
-  interpretation: string;
+  valueString: string;
+  note?: { text: string }[];
 }
 
 export type FhirRiskAssessmentPrediction = {
-  outcome: string;
-  probability: number;
-  qualitativeRisk: string;
+  outcome: FhirCodeableConcept;
+  probabilityDecimal: number;
+  qualitativeRisk: FhirCodeableConcept;
+  rationale?: string;
 };
 
 export interface FhirRiskAssessment {
   resourceType: 'RiskAssessment';
   id: string;
   status: string;
-  subject: string;
+  code: FhirCodeableConcept;
+  subject: FhirReference;
   occurrenceDateTime: string;
-  prediction: FhirRiskAssessmentPrediction;
-  basis: string[];
+  prediction: FhirRiskAssessmentPrediction[];
+  basis?: FhirReference[];
 }
 
 /**

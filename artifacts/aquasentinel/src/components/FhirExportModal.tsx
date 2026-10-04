@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Database, ShieldCheck, Copy, Check, Download, X, ArrowRight, ExternalLink } from 'lucide-react';
+import { Database, ShieldCheck, Copy, Check, Download, X } from 'lucide-react';
 
 interface FhirExportModalProps {
   isOpen: boolean;
@@ -8,8 +8,21 @@ interface FhirExportModalProps {
   siteName?: string;
 }
 
+interface SampleValidationResult {
+  valid: boolean;
+  status: string;
+  resourceType: string;
+  resourceId: string;
+  validatorEngine: string;
+  issues: { severity: string; diagnostics: string }[];
+}
+
 export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName = 'Adyar Bridge' }: FhirExportModalProps) {
   const [copied, setCopied] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validationResults, setValidationResults] = useState<SampleValidationResult[]>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [selectedResourceType, setSelectedResourceType] = useState<'Bundle' | 'Observation' | 'RiskAssessment'>('Bundle');
 
   if (!isOpen) return null;
@@ -69,21 +82,16 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
     id: `risk-${siteId.toLowerCase()}-01`,
     meta: { profile: ['http://hl7.org/fhir/StructureDefinition/RiskAssessment'] },
     status: 'final',
+    code: {
+      coding: [{ system: 'https://aquasentinel.io/fhir/codes', code: 'watershed-risk-assessment', display: 'Watershed ecosystem stress risk assessment' }],
+      text: 'Watershed ecosystem stress assessment'
+    },
     subject: {
       reference: `Location/${siteId}`,
       display: siteName
     },
     occurrenceDateTime: new Date().toISOString(),
-    condition: {
-      coding: [
-        {
-          system: 'http://snomed.info/sct',
-          code: '418700000',
-          display: 'Water pollution event'
-        }
-      ],
-      text: 'Acute stormwater runoff & hypoxic water quality stress'
-    },
+    condition: { display: 'Water pollution event and related water-quality stress' },
     prediction: [
       {
         outcome: {
@@ -113,11 +121,11 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
 
   const sampleBundle = {
     resourceType: 'Bundle',
-    type: 'transaction',
+    type: 'collection',
     timestamp: new Date().toISOString(),
     entry: [
-      { fullUrl: `urn:uuid:observation-${siteId}`, resource: sampleObservation },
-      { fullUrl: `urn:uuid:risk-${siteId}`, resource: sampleRiskAssessment }
+      { resource: sampleObservation },
+      { resource: sampleRiskAssessment }
     ]
   };
 
@@ -129,26 +137,68 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
       : sampleRiskAssessment;
 
   const jsonString = JSON.stringify(payload, null, 2);
+  const resourcesToValidate = selectedResourceType === 'Bundle'
+    ? sampleBundle.entry.map((entry) => entry.resource)
+    : [payload];
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(jsonString);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const selectResourceType = (resourceType: 'Bundle' | 'Observation' | 'RiskAssessment') => {
+    setSelectedResourceType(resourceType);
+    setValidationResults([]);
+    setValidationError(null);
+    setActionError(null);
+  };
+
+  const handleValidate = async () => {
+    setValidating(true);
+    setValidationError(null);
+    setValidationResults([]);
+    try {
+      const results = await Promise.all(resourcesToValidate.map(async (resource) => {
+        const response = await fetch('/api/fhir/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resource),
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(typeof result?.error === 'string' ? result.error : 'FHIR validator returned HTTP ' + response.status);
+        }
+        return result as SampleValidationResult;
+      }));
+      setValidationResults(results);
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : 'FHIR validation could not be completed.');
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    setActionError(null);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is unavailable in this browser context.');
+      await navigator.clipboard.writeText(jsonString);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not copy the sample payload.');
+    }
   };
 
   const handleDownload = () => {
+    setActionError(null);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `aquasentinel-fhir-${selectedResourceType.toLowerCase()}-${siteId}.json`;
     a.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-xs">
-      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden flex flex-col bg-white shadow-2xl">
+      <div className="panel max-h-[90dvh] min-h-0 w-full max-w-3xl overflow-hidden flex flex-col bg-white shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b p-5 bg-slate-900 text-white">
           <div className="flex items-center gap-3">
@@ -156,9 +206,9 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
               <Database size={18} />
             </span>
             <div>
-              <h3 className="font-display text-lg font-bold">Export to Health System (HL7 FHIR R4)</h3>
+              <h3 className="font-display text-lg font-bold">FHIR R4 Sample Export</h3>
               <p className="text-xs text-slate-300">
-                Zero-friction epidemiological data exchange with municipal EHRs, CDC registries, and environmental GIS.
+                Sample FHIR R4 payload for inspection only; this preview does not send data to a health system.
               </p>
             </div>
           </div>
@@ -169,8 +219,8 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
 
         {/* Transmission Diagram Banner */}
         <div className="p-4 bg-teal-950/[0.04] border-b border-slate-200">
-          <div className="text-[11px] font-mono uppercase text-teal-800 font-bold mb-2">Interoperability Pipeline Flow</div>
-          <div className="grid grid-cols-4 gap-2 text-center text-xs">
+          <div className="text-[11px] font-mono uppercase text-teal-800 font-bold mb-2">Sample Resource Flow</div>
+          <div className="grid grid-cols-2 gap-2 text-center text-xs lg:grid-cols-4">
             <div className="rounded-lg border border-slate-200 bg-white p-2">
               <div className="font-bold text-slate-800">AquaSentinel</div>
               <div className="text-[10px] text-slate-500">Telemetry & Citizens</div>
@@ -191,36 +241,41 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
         </div>
 
         {/* Payload Viewer Body */}
-        <div className="p-5 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             {/* Resource Type Selector */}
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
               <button
-                onClick={() => setSelectedResourceType('Bundle')}
+                onClick={() => selectResourceType('Bundle')}
                 className={`px-3 py-1 rounded transition ${selectedResourceType === 'Bundle' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
               >
                 FHIR Bundle
               </button>
               <button
-                onClick={() => setSelectedResourceType('Observation')}
+                onClick={() => selectResourceType('Observation')}
                 className={`px-3 py-1 rounded transition ${selectedResourceType === 'Observation' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
               >
                 Observation
               </button>
               <button
-                onClick={() => setSelectedResourceType('RiskAssessment')}
+                onClick={() => selectResourceType('RiskAssessment')}
                 className={`px-3 py-1 rounded transition ${selectedResourceType === 'RiskAssessment' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
               >
                 RiskAssessment
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                <ShieldCheck size={13} /> Validated Against HAPI FHIR R4
-              </span>
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
-                onClick={handleCopy}
+                onClick={() => void handleValidate()}
+                disabled={validating}
+                className="flex items-center gap-1 text-xs border border-teal-300 rounded px-2.5 py-1 text-teal-800 hover:bg-teal-50 font-medium disabled:opacity-50"
+              >
+                <ShieldCheck size={12} className={validating ? 'animate-spin' : ''} />
+                {validating ? 'Validating…' : 'Validate sample'}
+              </button>
+              <button
+                onClick={() => void handleCopy()}
                 className="flex items-center gap-1 text-xs border border-slate-300 rounded px-2.5 py-1 hover:bg-slate-50 font-medium"
               >
                 {copied ? <Check size={12} className="text-teal-600" /> : <Copy size={12} />}
@@ -235,17 +290,43 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
             </div>
           </div>
 
-          <pre className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs text-teal-300 overflow-x-auto max-h-72">
+                    {validationError && (
+            <div role="alert" className="mb-3 rounded-lg border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900">
+              FHIR validation request failed: {validationError}
+            </div>
+          )}
+          {actionError && (
+            <div role="alert" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              {actionError}
+            </div>
+          )}
+          {validationResults.length > 0 && (
+            <div role="status" className="mb-3 space-y-2">
+              {validationResults.map((result, index) => (
+                <div key={index} className={"rounded-lg border p-3 text-xs " + (result.valid ? "border-teal-300 bg-teal-50 text-teal-950" : "border-rose-300 bg-rose-50 text-rose-950")}>
+                  <div className="font-semibold">{result.resourceType}/{result.resourceId}: {result.status}</div>
+                  <div className="mt-1 text-[10px]">Validator: {result.validatorEngine}</div>
+                  {result.issues.map((issue, issueIndex) => (
+                    <div key={issueIndex} className={"mt-1 font-mono text-[10px] " + (issue.severity === "error" || issue.severity === "fatal" ? "text-rose-800" : issue.severity === "warning" ? "text-amber-800" : "text-slate-700")}>
+                      [{issue.severity.toUpperCase()}] {issue.diagnostics}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+<pre className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs text-teal-300 overflow-x-auto max-h-72">
             {jsonString}
           </pre>
         </div>
 
         {/* Footer */}
-        <div className="border-t p-4 bg-slate-50 flex items-center justify-between text-xs text-slate-600">
-          <div className="flex items-center gap-2">
-            <span>Canonical Endpoint:</span>
-            <code className="font-mono bg-white px-2 py-0.5 rounded border text-[11px] text-teal-800">
-              GET /api/fhir/r4/{selectedResourceType === 'Bundle' ? 'Observation' : selectedResourceType}
+        <div className="flex flex-col gap-3 border-t bg-slate-50 p-4 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <span>{selectedResourceType === 'Bundle' ? 'Sample collection resources:' : 'Canonical Endpoint:'}</span>
+            <code className="break-all rounded border bg-white px-2 py-0.5 font-mono text-[11px] text-teal-800">
+              {selectedResourceType === 'Bundle' ? 'GET /api/fhir/r4/Observation · GET /api/fhir/r4/RiskAssessment' : 'GET /api/fhir/r4/' + selectedResourceType}
             </code>
           </div>
           <button
