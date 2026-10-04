@@ -17,7 +17,6 @@ import {
 
 import { GisMap } from './components/GisMap';
 import { OneHealthChainBanner, OneHealthImpactCard } from './components/OneHealthChain';
-import { IncidentReplay } from './components/IncidentReplay';
 import { EcosystemTimeline } from './components/EcosystemTimeline';
 import { FhirExportModal } from './components/FhirExportModal';
 import { WaterTwin, MeasurableImpactCard } from './components/WaterTwin';
@@ -231,7 +230,6 @@ function Dashboard() {
   const dashboard = useGetDashboard();
   const sites = useListSites();
   const alerts = useListAlerts();
-  const [showReplay, setShowReplay] = useState(true);
 
   if (dashboard.isLoading || sites.isLoading) return <><PageHeader eyebrow="Global network / simulated" title="Watershed intelligence" detail="Aggregated signals from a synthetic, multi-region demonstration network." /><LoadingRows count={5} /></>;
   if (dashboard.isError || sites.isError) return <ErrorState message="Dashboard signal unavailable" retry={() => { dashboard.refetch(); sites.refetch(); }} />;
@@ -245,10 +243,6 @@ function Dashboard() {
       detail="A cross-region read of what changed, where attention is needed, and why. Telemetry is fused across live USGS hydrological APIs, global weather, and citizen science."
       action={
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setShowReplay(!showReplay)}>
-            <Sparkles size={14} className="text-teal-600" />
-            {showReplay ? 'Hide Incident Replay' : 'Launch Incident Replay'}
-          </Button>
           <Button variant="secondary" onClick={() => dashboard.refetch()} data-testid="button-refresh-dashboard">
             <RefreshCw size={14} /> Refresh
           </Button>
@@ -263,13 +257,6 @@ function Dashboard() {
     <div className="my-6">
       <OneHealthWorkflow />
     </div>
-
-    {/* Interactive Hackathon Feature: Live Incident Replay */}
-    {showReplay && (
-      <div>
-        <IncidentReplay />
-      </div>
-    )}
 
     {/* Overview KPI Cards */}
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
