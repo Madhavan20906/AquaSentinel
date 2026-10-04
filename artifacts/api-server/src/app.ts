@@ -36,8 +36,8 @@ const clientDist = candidateDistDirs.find((dir) => fs.existsSync(path.join(dir, 
 
 if (clientDist) {
   app.use(express.static(clientDist));
-  app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path === "/healthz") {
       return next();
     }
     res.sendFile(path.join(clientDist, "index.html"));

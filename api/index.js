@@ -48029,8 +48029,8 @@ var candidateDistDirs = [
 var clientDist = candidateDistDirs.find((dir) => fs3.existsSync(path3.join(dir, "index.html")));
 if (clientDist) {
   app.use(import_express5.default.static(clientDist));
-  app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path === "/healthz") {
       return next();
     }
     res.sendFile(path3.join(clientDist, "index.html"));
