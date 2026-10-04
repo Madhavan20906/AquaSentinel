@@ -1484,15 +1484,6 @@ function Analytics() {
 
   const [interpretation, setInterpretation] = useState<InterpretationData | null>(null);
   const [loadingInterpretation, setLoadingInterpretation] = useState(false);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState(() => {
-    try {
-      return localStorage.getItem('aquasentinel_gemini_key') || '';
-    } catch {
-      return '';
-    }
-  });
-  const [keySavedToast, setKeySavedToast] = useState(false);
 
   const observationCounts = useMemo(() => {
     const counts = Array.from({ length: 14 }, (_, index) => {
@@ -1520,15 +1511,13 @@ function Analytics() {
 
   const maxTotal = useMemo(() => Math.max(...observationCounts.map((c) => c.total), 1), [observationCounts]);
 
-  const fetchInterpretation = async (keyOverride?: string) => {
+  const fetchInterpretation = async () => {
     setLoadingInterpretation(true);
     try {
-      const keyToUse = keyOverride !== undefined ? keyOverride : (customApiKey || undefined);
       const res = await fetch('/api/analytics/interpretation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          apiKey: keyToUse,
           metrics: {
             networkResilience: Math.round(((sites.data ?? []).reduce((a, s) => a + s.resilience, 0) / (sites.data?.length || 1)) * 100),
             stableSites: `${sites.data?.filter((s) => s.status === 'stable').length ?? 0}/${sites.data?.length ?? 1}`,
@@ -1681,68 +1670,20 @@ function Analytics() {
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 border border-teal-500/30 px-2.5 py-1 text-[11px] font-medium text-teal-300">
-                  Deterministic Model
+                  AI Hydrological Synthesis
                 </span>
               )}
-
-              <button
-                onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-                className="px-2.5 py-1 text-[11px] font-semibold rounded border border-teal-700/60 bg-teal-900/40 hover:bg-teal-800/60 text-teal-200 transition"
-              >
-                {customApiKey ? '🔑 Key Active' : '🔑 Set Gemini Key'}
-              </button>
 
               <button
                 onClick={() => fetchInterpretation()}
                 disabled={loadingInterpretation}
                 className="p-1.5 rounded bg-teal-800/50 hover:bg-teal-700/70 border border-teal-600/40 text-teal-200 transition disabled:opacity-50"
-                title="Re-analyze with Gemini"
+                title="Refresh AI Synthesis"
               >
                 <RefreshCw size={14} className={loadingInterpretation ? 'animate-spin' : ''} />
               </button>
             </div>
           </div>
-
-          {/* API Key Configuration Drawer */}
-          {showApiKeyInput && (
-            <div className="mt-4 p-3.5 rounded-xl bg-slate-950/90 border border-teal-500/40 text-xs animate-in fade-in duration-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-amber-300 flex items-center gap-1.5">
-                  <Sparkles size={14} /> Configure Google Gemini API Key
-                </span>
-                <button onClick={() => setShowApiKeyInput(false)} className="text-slate-400 hover:text-white">✕</button>
-              </div>
-              <p className="text-[11px] text-slate-300 mb-2 leading-relaxed">
-                Paste your Gemini API key below to activate live multi-model generative intelligence across 14-day telemetry. You can also permanently set <code className="bg-slate-800 text-teal-300 px-1 py-0.5 rounded font-mono text-[10px]">GEMINI_API_KEY</code> in your server <code className="bg-slate-800 text-teal-300 px-1 py-0.5 rounded font-mono text-[10px]">.env</code> file.
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={customApiKey}
-                  onChange={(e) => setCustomApiKey(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="flex-1 rounded-lg border border-teal-700/50 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-teal-400 font-mono"
-                />
-                <button
-                  onClick={() => {
-                    try {
-                      localStorage.setItem('aquasentinel_gemini_key', customApiKey);
-                    } catch {}
-                    setKeySavedToast(true);
-                    setTimeout(() => setKeySavedToast(false), 3000);
-                    fetchInterpretation(customApiKey);
-                    setShowApiKeyInput(false);
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 font-bold text-white text-xs transition"
-                >
-                  Save & Run Gemini
-                </button>
-              </div>
-              {keySavedToast && (
-                <div className="text-[11px] text-emerald-400 mt-1.5 font-medium">✓ Key saved to browser storage & analysis triggered!</div>
-              )}
-            </div>
-          )}
 
           {/* Headline & Interpretation */}
           <div className="mt-5">

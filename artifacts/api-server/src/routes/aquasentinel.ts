@@ -1093,8 +1093,8 @@ router.get("/fhir/r4/RiskAssessment", async (_req, res): Promise<void> => {
 
 router.post("/analytics/interpretation", async (req, res): Promise<void> => {
   try {
-    const { apiKey, metrics, siteContext } = req.body || {};
-    const geminiApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const { metrics, siteContext } = req.body || {};
+    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
     const resilience = metrics?.networkResilience ?? 78;
     const stableSites = metrics?.stableSites ?? "3/4";
