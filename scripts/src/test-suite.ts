@@ -90,23 +90,17 @@ async function runTestSuite() {
   });
 
   // 4. HL7 FHIR R4 Validation
-  await test("HL7 FHIR R4 Validator: Observation conforms strictly to R4 schema", async () => {
-    const validObservation = {
-      resourceType: "Observation",
+  await test("HL7 FHIR R4 Validator: validates a canonical serialized Observation", async () => {
+    const validObservation = toFhirObservation({
       id: "obs-test-01",
-      status: "final",
-      category: [{ coding: [{ system: "http://terminology.hl7.org/CodeSystem/observation-category", code: "activity" }] }],
-      code: {
-        coding: [{ system: "http://loinc.org", code: "14788-4", display: "Water turbidity" }],
-        text: "Turbidity observation",
-      },
-      subject: { reference: "Location/ADYAR-01", display: "Adyar Bridge" },
-      effectiveDateTime: new Date().toISOString(),
-      valueQuantity: { value: 84, unit: "%", system: "http://unitsofmeasure.org", code: "%" },
-    };
+      siteId: "ADYAR-01",
+      siteName: "Adyar Bridge",
+      createdAt: new Date().toISOString(),
+      responses: { waterAppearance: "clear", unusualSmell: "none", visiblePollution: "none" },
+    });
 
     const result = await validateFhirResource(validObservation);
-    assert.equal(result.valid, true, "Resource must pass R4 validation");
+    assert.equal(result.valid, true, "Resource must pass R4 validation: " + JSON.stringify(result));
     assert.equal(result.fhirVersion, "4.0.1");
   });
 

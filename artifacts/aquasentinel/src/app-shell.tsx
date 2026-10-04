@@ -762,7 +762,7 @@ function Interoperability() {
             code: { coding: [{ system: 'https://aquasentinel.io/fhir/codes', code: 'watershed-ecosystem-stress-risk', display: 'Watershed ecosystem stress risk assessment' }] },
             subject: { reference: 'Location/ADYAR-01', display: 'Adyar Bridge' },
             occurrenceDateTime: new Date().toISOString(),
-            prediction: [{ outcome: { text: 'Sample environmental ecosystem stress' }, probabilityDecimal: 0.42, qualitativeRisk: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/risk-probability', code: 'low', display: 'Low' }] } }],
+            prediction: [{ outcome: { coding: [{ system: 'https://aquasentinel.io/fhir/codes', code: 'watershed-ecosystem-stress', display: 'Sample environmental ecosystem stress' }], text: 'Sample environmental ecosystem stress' }, probabilityDecimal: 0.42, qualitativeRisk: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/risk-probability', code: 'low', display: 'Low' }] } }],
           };
       const targetResource = rows[0] ?? fallbackResource;
       const response = await fetch('/api/fhir/validate', {

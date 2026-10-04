@@ -78,7 +78,10 @@ export function toFhirRiskAssessment(site: FhirRiskAssessmentSource) {
     },
     occurrenceDateTime: new Date(site.lastUpdated).toISOString(),
     prediction: [{
-      outcome: { text: "Potential environmental ecosystem stress" },
+      outcome: {
+        coding: [{ system: "https://aquasentinel.io/fhir/codes", code: "watershed-ecosystem-stress", display: "Potential environmental ecosystem stress" }],
+        text: "Potential environmental ecosystem stress",
+      },
       probabilityDecimal,
       qualitativeRisk: {
         coding: [{
