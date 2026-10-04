@@ -64,6 +64,7 @@ import {
   mapMission,
   mapObservation,
   mapSite,
+  seedInitialMissions,
 } from "../lib/aquasentinel-data";
 
 const router: IRouter = Router();
@@ -581,7 +582,11 @@ router.post("/alerts/:alertId/review", async (req, res): Promise<void> => {
 
 router.get("/missions", async (_req, res): Promise<void> => {
   await ensureDemoData();
-  const rows = await db.select().from(missionsTable).orderBy(desc(missionsTable.createdAt));
+  let rows = await db.select().from(missionsTable).orderBy(desc(missionsTable.createdAt));
+  if (rows.length === 0) {
+    await seedInitialMissions();
+    rows = await db.select().from(missionsTable).orderBy(desc(missionsTable.createdAt));
+  }
   res.json(ListMissionsResponse.parse(rows.map(mapMission)));
 });
 

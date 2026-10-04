@@ -498,6 +498,8 @@ export const ensureDemoData = (): Promise<void> => {
           timestamp: new Date(now),
         });
       }
+
+      await seedInitialMissions();
     })();
   }
   return seeded;
@@ -550,6 +552,99 @@ export const getLatestAlert = async () => {
 };
 
 export const createId = (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}`;
+
+export const seedInitialMissions = async (): Promise<void> => {
+  const existingMissions = await db.select({ id: missionsTable.id }).from(missionsTable).limit(1);
+  if (existingMissions.length > 0) return;
+
+  await db.insert(missionsTable).values([
+    {
+      id: "mission-adyar-01",
+      siteId: "ADYAR-01",
+      siteName: "Adyar Bridge",
+      alertId: "A-1048",
+      title: "Verify stream turbidity & surface runoff",
+      reason: "Multi-signal anomaly detected: Turbidity is +31% over baseline following 42 mm localized rainfall.",
+      instructions: [
+        "Navigate to the monitoring platform at Adyar Bridge northern pier.",
+        "Photograph the water column against the Secchi disk marker.",
+        "Check for chemical odor, surface sheen, or stormwater debris.",
+        "Submit geo-tagged field observations."
+      ],
+      estimatedMinutes: 4,
+      status: "available",
+      createdAt: new Date(Date.now() - 2 * 3600 * 1000),
+    },
+    {
+      id: "mission-sema-02",
+      siteId: "SEMA-09",
+      siteName: "Semmencherry Wetland",
+      alertId: "A-SEMA-09",
+      title: "Wetland channel flow & dissolved oxygen check",
+      reason: "Citizen reports indicate low dissolved oxygen indicators and stagnation in the eastern wetland canal.",
+      instructions: [
+        "Inspect the eastern outflow culvert and check water flow.",
+        "Document visible water coloration or organic buildup.",
+        "Record any unusual odors (sulfur, organic decay).",
+        "Submit community ground-truth evidence."
+      ],
+      estimatedMinutes: 5,
+      status: "available",
+      createdAt: new Date(Date.now() - 5 * 3600 * 1000),
+    },
+    {
+      id: "mission-cooum-03",
+      siteId: "COOUM-02",
+      siteName: "Chintadripet Reach",
+      alertId: "A-COOUM-02",
+      title: "Urban runoff & chemical sheen inspection",
+      reason: "Model detected conductivity variance and decreased resilience index in urban catchment reach.",
+      instructions: [
+        "Inspect stormwater discharge point near bridge pilings.",
+        "Take high-resolution photo of water surface.",
+        "Check for iridescent sheen or industrial discharge indicators.",
+        "Log qualitative appearance and submit report."
+      ],
+      estimatedMinutes: 6,
+      status: "available",
+      createdAt: new Date(Date.now() - 8 * 3600 * 1000),
+    },
+    {
+      id: "mission-usgs-04",
+      siteId: "USGS-01646500",
+      siteName: "Potomac River Station 01646500",
+      alertId: "A-USGS-01646500",
+      title: "USGS hydrologic anomaly field validation",
+      reason: "Continuous USGS sensor telemetry flagged sudden velocity surge and suspended sediment plume.",
+      instructions: [
+        "Verify sensor mounting intake at the river station.",
+        "Record visible sediment plume and surface turbidity.",
+        "Document upstream debris loading.",
+        "Confirm physical calibration reading."
+      ],
+      estimatedMinutes: 5,
+      status: "available",
+      createdAt: new Date(Date.now() - 12 * 3600 * 1000),
+    },
+    {
+      id: "mission-ama-05",
+      siteId: "AMA-01",
+      siteName: "Guamá Estuary",
+      alertId: "A-AMA-01",
+      title: "Tidal estuary salinity & sediment patrol",
+      reason: "Composite risk reached 76% due to high precipitation and reduced bio-indicator frequency.",
+      instructions: [
+        "Patrol mangrove estuary edge during tidal transition.",
+        "Take water clarity reading and surface photo.",
+        "Record wildlife presence or dead fish indicators.",
+        "Submit field mission log."
+      ],
+      estimatedMinutes: 7,
+      status: "available",
+      createdAt: new Date(Date.now() - 18 * 3600 * 1000),
+    },
+  ]);
+};
 
 export const getSiteById = async (siteId: string) => {
   const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, siteId));
