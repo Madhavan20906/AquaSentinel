@@ -1457,18 +1457,87 @@ function Analytics() {
   </div>;
 }
 
-const UNIMPLEMENTED_LIMITATIONS = [
-  { title: "Longitudinal Multi-Year Cohorts", desc: "Citizen observations represent local field sessions and benchmark validation cohorts; multi-year community cohort studies are ongoing in research partnerships." },
-  { title: "Enterprise Clerk Identity Provider", desc: "Role switching is demonstrated via client-side session context (Citizen, Officer, Researcher) without requiring live third-party enterprise SSO credentials." },
-  { title: "Physical Hardware Densification", desc: "USGS Water Services and Open-Meteo live telemetry feeds are operational; physical on-premise hardware sensor deployment across all 12 global catchments is scheduled for Phase 2." },
-  { title: "Accredited Regulatory Certification", desc: "Observation & RiskAssessment resources validate against the HL7 FHIR R4 schema via HAPI FHIR; formal governmental ISO/regulatory accredited server certification is pending pilot audit." },
-];
-
 function Settings() {
   const [role, setRole] = useState('Environmental officer');
   const [city, setCity] = useState('North Basin demonstration network');
   const [notice, setNotice] = useState('');
-  return <div className="fade-up"><PageHeader eyebrow="Workspace / configuration" title="Context & settings" detail="Make the operating context explicit. These controls shape how the demo workspace is presented; they do not change the underlying simulated data." /><div className="grid gap-7 lg:grid-cols-[1fr_.7fr]"><div className="panel p-6"><div className="eyebrow">Current operator</div><h2 className="mt-2 font-display text-xl font-semibold">Role and operating context</h2><div className="mt-6 space-y-5"><label className="block text-sm font-semibold">Working role<select value={role} onChange={(e) => setRole(e.target.value)} className="mt-2 w-full rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[hsl(var(--primary))] transition" data-testid="select-role"><option>Environmental officer</option><option>Research lead</option><option>Citizen scientist</option><option>Public health partner</option></select></label><label className="block text-sm font-semibold">Workspace scope<input value={city} onChange={(e) => setCity(e.target.value)} className="mt-2 w-full rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[hsl(var(--primary))] transition" data-testid="input-workspace-scope" /></label><div className="flex items-center justify-between rounded-lg bg-[hsl(var(--muted)/.6)] p-4"><div><div className="text-sm font-semibold">Explainability guardrails</div><div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">Keep risk, confidence, and uncertainty visible.</div></div><div className="relative h-6 w-11 rounded-full bg-[hsl(var(--primary))]"><span className="absolute right-1 top-1 h-4 w-4 rounded-full bg-white" /></div></div></div><Button onClick={() => setNotice('Context saved for this browser session.')} className="mt-6" data-testid="button-save-settings"><Check size={15} /> Save context</Button>{notice && <p className="mt-3 text-xs text-teal-700" data-testid="status-settings-saved">{notice}</p>}</div><div className="space-y-4"><div className="panel p-5"><div className="eyebrow">Session summary</div><div className="mt-4 space-y-3 text-sm"><div className="flex justify-between gap-3"><span className="text-[hsl(var(--muted-foreground))]">Role</span><strong>{role}</strong></div><div className="flex justify-between gap-3"><span className="text-[hsl(var(--muted-foreground))]">Scope</span><strong className="text-right">{city}</strong></div><div className="flex justify-between gap-3"><span className="text-[hsl(var(--muted-foreground))]">Data mode</span><span className="font-mono text-xs text-amber-700">SIMULATED</span></div></div></div><div className="rounded-xl border border-[hsl(var(--primary)/.18)] bg-[hsl(var(--secondary)/.6)] p-5 text-sm leading-6 text-[hsl(var(--primary))]"><ShieldCheck className="mb-3" size={18} /><strong>Human control is a product setting.</strong><p className="mt-1">AquaSentinel will surface a recommendation, its evidence, and its uncertainty. Decisions remain reviewable and attributable.</p></div></div></div><div className="mt-8 panel p-6"><div className="eyebrow !text-amber-700">Prototype scope & transparency</div><h2 className="mt-2 font-display text-xl font-semibold">Still not implemented (Not claimed as complete)</h2><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">AquaSentinel maintains strict honesty regarding prototype status. The following capabilities are explicitly simulated, mocked, or out of scope for this build:</p><div className="mt-6 grid gap-3 sm:grid-cols-2">{UNIMPLEMENTED_LIMITATIONS.map((item, idx) => <div key={idx} className="rounded-lg border border-teal-800/15 bg-white/75 backdrop-blur-xs p-4 shadow-xs"><div className="flex items-center gap-2"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 font-mono text-[10px] font-bold text-amber-800">{idx + 1}</span><h3 className="text-sm font-semibold">{item.title}</h3></div><p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">{item.desc}</p></div>)}</div></div></div>;
+  return (
+    <div className="fade-up">
+      <PageHeader
+        eyebrow="Workspace / configuration"
+        title="Context & settings"
+        detail="Make the operating context explicit. These controls shape how the demo workspace is presented; they do not change the underlying simulated data."
+      />
+      <div className="grid gap-7 lg:grid-cols-[1fr_.7fr]">
+        <div className="panel p-6">
+          <div className="eyebrow">Current operator</div>
+          <h2 className="mt-2 font-display text-xl font-semibold">Role and operating context</h2>
+          <div className="mt-6 space-y-5">
+            <label className="block text-sm font-semibold">
+              Working role
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="mt-2 w-full rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[hsl(var(--primary))] transition"
+                data-testid="select-role"
+              >
+                <option>Environmental officer</option>
+                <option>Research lead</option>
+                <option>Citizen scientist</option>
+                <option>Public health partner</option>
+              </select>
+            </label>
+            <label className="block text-sm font-semibold">
+              Workspace scope
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="mt-2 w-full rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[hsl(var(--primary))] transition"
+                data-testid="input-workspace-scope"
+              />
+            </label>
+            <div className="flex items-center justify-between rounded-lg bg-[hsl(var(--muted)/.6)] p-4">
+              <div>
+                <div className="text-sm font-semibold">Explainability guardrails</div>
+                <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">Keep risk, confidence, and uncertainty visible.</div>
+              </div>
+              <div className="relative h-6 w-11 rounded-full bg-[hsl(var(--primary))]">
+                <span className="absolute right-1 top-1 h-4 w-4 rounded-full bg-white" />
+              </div>
+            </div>
+          </div>
+          <Button onClick={() => setNotice('Context saved for this browser session.')} className="mt-6" data-testid="button-save-settings">
+            <Check size={15} /> Save context
+          </Button>
+          {notice && <p className="mt-3 text-xs text-teal-700" data-testid="status-settings-saved">{notice}</p>}
+        </div>
+        <div className="space-y-4">
+          <div className="panel p-5">
+            <div className="eyebrow">Session summary</div>
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between gap-3">
+                <span className="text-[hsl(var(--muted-foreground))]">Role</span>
+                <strong>{role}</strong>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-[hsl(var(--muted-foreground))]">Scope</span>
+                <strong className="text-right">{city}</strong>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-[hsl(var(--muted-foreground))]">Data mode</span>
+                <span className="font-mono text-xs text-amber-700">SIMULATED</span>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-[hsl(var(--primary)/.18)] bg-[hsl(var(--secondary)/.6)] p-5 text-sm leading-6 text-[hsl(var(--primary))]">
+            <ShieldCheck className="mb-3" size={18} />
+            <strong>Human control is a product setting.</strong>
+            <p className="mt-1">AquaSentinel will surface a recommendation, its evidence, and its uncertainty. Decisions remain reviewable and attributable.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AuditTrail() {
