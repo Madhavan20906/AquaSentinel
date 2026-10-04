@@ -123,14 +123,14 @@ export function OneHealthChainBanner({ activeNode = 'water', onSelectNode }: { a
               onClick={() => onSelectNode?.(node.id)}
               className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all ${
                 isSelected
-                  ? 'border-teal-500 bg-white shadow-md ring-2 ring-teal-500/20'
-                  : 'border-slate-200 bg-white/70 hover:bg-white hover:border-slate-300'
+                  ? 'border-teal-600 bg-white/95 shadow-xs ring-2 ring-teal-500/20'
+                  : 'border-teal-800/15 bg-white/60 hover:bg-white/90 hover:border-teal-700/30'
               }`}
             >
               <div className={`p-2 rounded-lg ${node.color} mb-1.5`}>
                 <Icon size={16} />
               </div>
-              <div className="text-[11px] font-bold text-slate-800">{node.label}</div>
+              <div className="text-[11px] font-bold text-teal-950">{node.label}</div>
               {i < nodes.length - 1 && (
                 <span className="hidden lg:block absolute -right-2 top-1/2 -translate-y-1/2 z-10 text-slate-400">
                   <ArrowRight size={10} />
@@ -159,34 +159,34 @@ export function OneHealthImpactCard({ data = DEFAULT_ONE_HEALTH_IMPACT }: { data
             Evaluating how physical water anomalies cascade into ecological, zoonotic, and public health vulnerabilities.
           </p>
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+        <div className="flex items-center gap-1.5 bg-teal-900/[0.05] border border-teal-800/10 p-1 rounded-lg text-xs font-semibold">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'all' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded transition ${activeTab === 'all' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             All Facets
           </button>
           <button
             onClick={() => setActiveTab('water')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'water' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded transition ${activeTab === 'water' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             💧 Water
           </button>
           <button
             onClick={() => setActiveTab('aquatic')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'aquatic' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded transition ${activeTab === 'aquatic' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             🐟 Aquatic
           </button>
           <button
             onClick={() => setActiveTab('animal')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'animal' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded transition ${activeTab === 'animal' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             🐕 Animal
           </button>
           <button
             onClick={() => setActiveTab('human')}
-            className={`px-2.5 py-1 rounded ${activeTab === 'human' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded transition ${activeTab === 'human' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             👨‍👩‍👧 Human
           </button>
@@ -318,14 +318,14 @@ export function OneHealthImpactCard({ data = DEFAULT_ONE_HEALTH_IMPACT }: { data
       </div>
 
       {/* Supporting Evidence Banner */}
-      <div className="mt-4 rounded-lg bg-slate-50 border border-slate-200 p-3.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-2">
-          <Info size={14} className="text-teal-600" />
+      <div className="mt-4 rounded-lg bg-teal-900/[0.04] border border-teal-800/15 p-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-teal-950 mb-2">
+          <Info size={14} className="text-teal-700" />
           <span>🔎 Corroborating Evidence Behind This Assessment</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-teal-900/80">
           {data.supportingEvidence.map((ev, i) => (
-            <div key={i} className="flex items-start gap-1.5 bg-white p-2 rounded border border-slate-100">
+            <div key={i} className="flex items-start gap-1.5 bg-white/80 backdrop-blur-xs p-2 rounded border border-teal-800/15 shadow-xs">
               <span className="text-teal-600 font-bold">✓</span>
               <span>{ev}</span>
             </div>

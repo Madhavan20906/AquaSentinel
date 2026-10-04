@@ -43,18 +43,18 @@
 :root {
   --background: 168 36% 96%;
   --foreground: 190 35% 15%;
-  --border: 170 18% 83%;
-  --input: 170 18% 83%;
+  --border: 172 24% 84%;
+  --input: 172 24% 84%;
   --ring: 174 77% 35%;
-  --card: 0 0% 100%;
+  --card: 168 32% 98.4%;
   --card-foreground: 190 35% 15%;
-  --card-border: 170 18% 85%;
+  --card-border: 172 26% 85%;
   --primary: 174 77% 29%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 157 42% 91%;
-  --secondary-foreground: 170 53% 22%;
-  --muted: 166 22% 91%;
-  --muted-foreground: 188 17% 42%;
+  --secondary: 162 38% 92%;
+  --secondary-foreground: 172 55% 20%;
+  --muted: 168 25% 92%;
+  --muted-foreground: 184 20% 40%;
   --accent: 36 91% 63%;
   --accent-foreground: 28 58% 18%;
   --destructive: 4 63% 44%;
@@ -69,8 +69,8 @@
   --app-font-sans: 'DM Sans', sans-serif;
   --app-font-mono: 'DM Mono', monospace;
   --radius: 0.75rem;
-  --elevate-1: rgba(20, 79, 73, .05);
-  --elevate-2: rgba(20, 79, 73, .10);
+  --elevate-1: rgba(13, 78, 72, .05);
+  --elevate-2: rgba(13, 78, 72, .10);
 }
 
 * { border-color: hsl(var(--border)); }
@@ -79,7 +79,9 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    radial-gradient(circle at 90% -10%, rgba(247, 194, 75, .13), transparent 28rem),
+    radial-gradient(circle at 92% -8%, rgba(45, 212, 191, .09), transparent 30rem),
+    radial-gradient(circle at 8% 25%, rgba(20, 184, 166, .07), transparent 28rem),
+    radial-gradient(circle at 85% 75%, rgba(13, 148, 136, .06), transparent 32rem),
     hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--app-font-sans);
@@ -94,9 +96,9 @@ a { color: inherit; text-decoration: none; }
 .eyebrow { color: hsl(var(--primary)); font: 500 10px/1.2 var(--app-font-mono); letter-spacing: .16em; text-transform: uppercase; }
 .grid-paper { background-image: linear-gradient(rgba(26, 107, 99, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(26, 107, 99, .045) 1px, transparent 1px); background-size: 24px 24px; }
 .noise::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); z-index: 50; }
-.panel { background: hsl(var(--card)); border: 1px solid hsl(var(--card-border)); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(20, 79, 73, .055); }
+.panel { background: hsl(var(--card)); border: 1px solid hsl(var(--card-border)); border-radius: var(--radius); box-shadow: 0 4px 20px -2px rgba(13, 78, 72, .05), 0 2px 6px -1px rgba(13, 78, 72, .03); }
 .panel-hover { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
-.panel-hover:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(20, 79, 73, .10); border-color: hsl(var(--primary) / .35); }
+.panel-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -4px rgba(13, 78, 72, .09); border-color: hsl(var(--primary) / .35); }
 .status-dot { width: 7px; height: 7px; border-radius: 999px; background: currentColor; box-shadow: 0 0 0 4px currentColor; opacity: .18; }
 .status-dot::after { content: ''; display: block; width: 7px; height: 7px; border-radius: inherit; background: currentColor; opacity: 1; }
 .skeleton { animation: pulse 1.6s ease-in-out infinite; background: hsl(var(--muted)); border-radius: 6px; }

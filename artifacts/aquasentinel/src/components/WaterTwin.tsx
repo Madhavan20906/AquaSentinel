@@ -184,8 +184,8 @@ export function WaterTwin() {
 
 export function MeasurableImpactCard() {
   return (
-    <div className="panel p-6 border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-4">
+    <div className="panel p-6 border border-teal-800/15 bg-[hsl(var(--card))] shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-teal-800/10 pb-4">
         <div>
           <div className="eyebrow !text-teal-700">Measurable Outcomes & Evaluation</div>
           <h3 className="font-display text-lg font-semibold text-slate-900">
@@ -195,7 +195,7 @@ export function MeasurableImpactCard() {
             Empirical comparative analysis measured against historical municipal grab-sampling records and USGS benchmark datasets.
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-[10px] text-slate-700 border border-slate-200">
+        <span className="rounded-full bg-teal-900/[0.05] px-3 py-1 font-mono text-[10px] text-teal-800 border border-teal-800/15 font-semibold">
           PROTOTYPE EVALUATION RESULTS
         </span>
       </div>

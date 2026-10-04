@@ -45,8 +45,8 @@ export function EcosystemTimeline() {
   const dataset = timeframe === '24h' ? TIMELINE_DATA_24H : timeframe === '7d' ? TIMELINE_DATA_7D : TIMELINE_DATA_30D;
 
   return (
-    <div className="panel p-6 border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-4">
+    <div className="panel p-6 border border-teal-800/15 bg-[hsl(var(--card))] shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-teal-800/10 pb-4">
         <div>
           <div className="eyebrow !text-teal-700">Multi-Signal Chronology</div>
           <h3 className="font-display text-lg font-semibold text-slate-900">
@@ -58,22 +58,22 @@ export function EcosystemTimeline() {
         </div>
 
         {/* Timeframe Switcher */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+        <div className="flex items-center gap-1 bg-teal-900/[0.05] border border-teal-800/10 p-1 rounded-lg text-xs font-semibold">
           <button
             onClick={() => setTimeframe('24h')}
-            className={`px-3 py-1.5 rounded transition ${timeframe === '24h' ? 'bg-white text-teal-800 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-3 py-1.5 rounded transition ${timeframe === '24h' ? 'bg-white/95 text-teal-950 shadow-xs font-bold border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Past 24 Hours
           </button>
           <button
             onClick={() => setTimeframe('7d')}
-            className={`px-3 py-1.5 rounded transition ${timeframe === '7d' ? 'bg-white text-teal-800 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-3 py-1.5 rounded transition ${timeframe === '7d' ? 'bg-white/95 text-teal-950 shadow-xs font-bold border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Past 7 Days
           </button>
           <button
             onClick={() => setTimeframe('30d')}
-            className={`px-3 py-1.5 rounded transition ${timeframe === '30d' ? 'bg-white text-teal-800 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-3 py-1.5 rounded transition ${timeframe === '30d' ? 'bg-white/95 text-teal-950 shadow-xs font-bold border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Past 30 Days
           </button>
@@ -81,7 +81,7 @@ export function EcosystemTimeline() {
       </div>
 
       {/* Key Correlated Event Proof Banner */}
-      <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50/70 p-4 text-xs">
+      <div className="mt-4 rounded-xl border border-teal-700/20 bg-teal-50/80 p-4 text-xs">
         <div className="flex items-center gap-2 font-bold text-teal-950 text-sm">
           <Check size={16} className="text-teal-600" />
           <span>Ecosystem Correlation Verified: Multi-Parameter Synchronization</span>
@@ -127,7 +127,7 @@ export function EcosystemTimeline() {
             {/* 5 Cascade Layers */}
             <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-xs">
               {/* Layer 1: Rainfall */}
-              <div className="flex items-start gap-2 bg-white/80 p-2.5 rounded-lg border border-slate-100">
+              <div className="flex items-start gap-2 bg-teal-50/70 p-2.5 rounded-lg border border-teal-800/10">
                 <CloudRain size={16} className="text-cyan-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-[10px] uppercase font-mono text-slate-500">1. Rainfall</div>
@@ -137,7 +137,7 @@ export function EcosystemTimeline() {
               </div>
 
               {/* Layer 2: Water Parameters */}
-              <div className="flex items-start gap-2 bg-white/80 p-2.5 rounded-lg border border-slate-100">
+              <div className="flex items-start gap-2 bg-teal-50/70 p-2.5 rounded-lg border border-teal-800/10">
                 <Droplets size={16} className="text-teal-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-[10px] uppercase font-mono text-slate-500">2. Water Quality</div>
@@ -147,7 +147,7 @@ export function EcosystemTimeline() {
               </div>
 
               {/* Layer 3: Ecological Observations */}
-              <div className="flex items-start gap-2 bg-white/80 p-2.5 rounded-lg border border-slate-100">
+              <div className="flex items-start gap-2 bg-teal-50/70 p-2.5 rounded-lg border border-teal-800/10">
                 <Fish size={16} className="text-blue-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-[10px] uppercase font-mono text-slate-500">3. Ecological Pulse</div>
@@ -156,7 +156,7 @@ export function EcosystemTimeline() {
               </div>
 
               {/* Layer 4: Citizen Reports */}
-              <div className="flex items-start gap-2 bg-white/80 p-2.5 rounded-lg border border-slate-100">
+              <div className="flex items-start gap-2 bg-teal-50/70 p-2.5 rounded-lg border border-teal-800/10">
                 <Users size={16} className="text-purple-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-[10px] uppercase font-mono text-slate-500">4. Citizen Reports</div>
@@ -166,7 +166,7 @@ export function EcosystemTimeline() {
               </div>
 
               {/* Layer 5: Coordinated Intervention */}
-              <div className="flex items-start gap-2 bg-white/80 p-2.5 rounded-lg border border-slate-100">
+              <div className="flex items-start gap-2 bg-teal-50/70 p-2.5 rounded-lg border border-teal-800/10">
                 <ShieldCheck size={16} className="text-emerald-600 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-[10px] uppercase font-mono text-slate-500">5. Intervention</div>

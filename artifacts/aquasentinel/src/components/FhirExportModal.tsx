@@ -148,9 +148,9 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-xs">
-      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden flex flex-col bg-white shadow-2xl">
+      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden flex flex-col bg-[hsl(var(--card))] border border-teal-800/25 shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b p-5 bg-slate-900 text-white">
+        <div className="flex items-center justify-between border-b border-teal-900/40 p-5 bg-slate-900 text-white">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal-500 text-slate-950">
               <Database size={18} />
@@ -168,24 +168,24 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
         </div>
 
         {/* Transmission Diagram Banner */}
-        <div className="p-4 bg-teal-950/[0.04] border-b border-slate-200">
+        <div className="p-4 bg-teal-900/[0.05] border-b border-teal-800/15">
           <div className="text-[11px] font-mono uppercase text-teal-800 font-bold mb-2">Interoperability Pipeline Flow</div>
           <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <div className="rounded-lg border border-slate-200 bg-white p-2">
-              <div className="font-bold text-slate-800">AquaSentinel</div>
-              <div className="text-[10px] text-slate-500">Telemetry & Citizens</div>
+            <div className="rounded-lg border border-teal-800/15 bg-white/80 backdrop-blur-xs p-2 shadow-xs">
+              <div className="font-bold text-teal-950">AquaSentinel</div>
+              <div className="text-[10px] text-teal-800/70">Telemetry & Citizens</div>
             </div>
-            <div className="rounded-lg border border-teal-300 bg-teal-50 p-2">
+            <div className="rounded-lg border border-teal-300 bg-teal-50/90 p-2 shadow-xs">
               <div className="font-bold text-teal-900">FHIR Observation</div>
               <div className="text-[10px] text-teal-700">LOINC 14788-4</div>
             </div>
-            <div className="rounded-lg border border-teal-300 bg-teal-50 p-2">
+            <div className="rounded-lg border border-teal-300 bg-teal-50/90 p-2 shadow-xs">
               <div className="font-bold text-teal-900">FHIR RiskAssessment</div>
               <div className="text-[10px] text-teal-700">SNOMED-CT 418700000</div>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-2">
-              <div className="font-bold text-slate-800">Hospital EHR / CDC</div>
-              <div className="text-[10px] text-slate-500">Public Health Registry</div>
+            <div className="rounded-lg border border-teal-800/15 bg-white/80 backdrop-blur-xs p-2 shadow-xs">
+              <div className="font-bold text-teal-950">Hospital EHR / CDC</div>
+              <div className="text-[10px] text-teal-800/70">Public Health Registry</div>
             </div>
           </div>
         </div>
@@ -194,63 +194,63 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
         <div className="p-5 flex-1 overflow-y-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             {/* Resource Type Selector */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+            <div className="flex items-center gap-1 bg-teal-900/[0.06] border border-teal-800/15 p-1 rounded-lg text-xs font-semibold">
               <button
                 onClick={() => setSelectedResourceType('Bundle')}
-                className={`px-3 py-1 rounded transition ${selectedResourceType === 'Bundle' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
+                className={`px-3 py-1 rounded transition ${selectedResourceType === 'Bundle' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
               >
                 FHIR Bundle
               </button>
               <button
                 onClick={() => setSelectedResourceType('Observation')}
-                className={`px-3 py-1 rounded transition ${selectedResourceType === 'Observation' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
+                className={`px-3 py-1 rounded transition ${selectedResourceType === 'Observation' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
               >
                 Observation
               </button>
               <button
                 onClick={() => setSelectedResourceType('RiskAssessment')}
-                className={`px-3 py-1 rounded transition ${selectedResourceType === 'RiskAssessment' ? 'bg-white text-teal-800 shadow-xs font-bold' : 'text-slate-600'}`}
+                className={`px-3 py-1 rounded transition ${selectedResourceType === 'RiskAssessment' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20 font-bold' : 'text-teal-900/70 hover:text-teal-950'}`}
               >
                 RiskAssessment
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                <ShieldCheck size={13} /> Validated Against HAPI FHIR R4
+              <span className="flex items-center gap-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-300 px-2 py-0.5 rounded shadow-xs">
+                <ShieldCheck size={13} className="text-teal-600" /> Validated Against HAPI FHIR R4
               </span>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-xs border border-slate-300 rounded px-2.5 py-1 hover:bg-slate-50 font-medium"
+                className="flex items-center gap-1 text-xs border border-teal-800/20 bg-white/80 hover:bg-teal-50 text-teal-950 rounded px-2.5 py-1 font-medium transition"
               >
                 {copied ? <Check size={12} className="text-teal-600" /> : <Copy size={12} />}
                 {copied ? 'Copied!' : 'Copy JSON'}
               </button>
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-1 text-xs bg-slate-900 text-white rounded px-2.5 py-1 hover:bg-slate-800 font-medium"
+                className="flex items-center gap-1 text-xs bg-teal-800 text-white rounded px-2.5 py-1 hover:bg-teal-900 font-medium transition shadow-xs"
               >
                 <Download size={12} /> Download
               </button>
             </div>
           </div>
 
-          <pre className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs text-teal-300 overflow-x-auto max-h-72">
+          <pre className="rounded-xl border border-teal-950/40 bg-slate-950 p-4 font-mono text-xs text-teal-300 overflow-x-auto max-h-72">
             {jsonString}
           </pre>
         </div>
 
         {/* Footer */}
-        <div className="border-t p-4 bg-slate-50 flex items-center justify-between text-xs text-slate-600">
+        <div className="border-t border-teal-800/15 p-4 bg-teal-50/70 flex items-center justify-between text-xs text-teal-900">
           <div className="flex items-center gap-2">
             <span>Canonical Endpoint:</span>
-            <code className="font-mono bg-white px-2 py-0.5 rounded border text-[11px] text-teal-800">
+            <code className="font-mono bg-white/90 px-2 py-0.5 rounded border border-teal-800/20 text-[11px] text-teal-900 shadow-xs">
               GET /api/fhir/r4/{selectedResourceType === 'Bundle' ? 'Observation' : selectedResourceType}
             </code>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg bg-teal-700 text-white px-4 py-2 font-semibold hover:bg-teal-800"
+            className="rounded-lg bg-teal-700 text-white px-4 py-2 font-semibold hover:bg-teal-800 transition shadow-xs"
           >
             Done Inspecting
           </button>
