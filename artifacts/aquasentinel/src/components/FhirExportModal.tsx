@@ -147,22 +147,22 @@ export function FhirExportModal({ isOpen, onClose, siteId = 'ADYAR-01', siteName
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-xs">
-      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden flex flex-col bg-[hsl(var(--card))] border border-teal-800/25 shadow-2xl">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-teal-950/40 p-4 backdrop-blur-xs">
+      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden flex flex-col bg-white border border-teal-800/25 shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-teal-900/40 p-5 bg-slate-900 text-white">
+        <div className="flex items-center justify-between border-b border-teal-800/15 p-5 bg-white text-slate-900">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal-500 text-slate-950">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-teal-50 text-teal-700 border border-teal-200">
               <Database size={18} />
             </span>
             <div>
-              <h3 className="font-display text-lg font-bold">Export to Health System (HL7 FHIR R4)</h3>
-              <p className="text-xs text-slate-300">
+              <h3 className="font-display text-lg font-bold text-teal-950">Export to Health System (HL7 FHIR R4)</h3>
+              <p className="text-xs text-slate-600">
                 Zero-friction epidemiological data exchange with municipal EHRs, CDC registries, and environmental GIS.
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <button onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition cursor-pointer">
             <X size={18} />
           </button>
         </div>

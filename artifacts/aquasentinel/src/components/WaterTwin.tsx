@@ -29,43 +29,43 @@ export function WaterTwin() {
   const [activeLayer, setActiveLayer] = useState<'all' | 'sensors' | 'citizens' | 'ecology'>('all');
 
   return (
-    <div className="panel p-6 border-2 border-teal-500/20 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 text-white">
+    <div className="panel p-6 border border-teal-800/15 bg-white text-slate-900 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-teal-800/10 pb-4">
         <div>
-          <div className="eyebrow !text-teal-400">Digital Environmental Twin</div>
-          <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
-            <Waves size={20} className="text-teal-400" />
+          <div className="eyebrow !text-teal-700">Digital Environmental Twin</div>
+          <h2 className="font-display text-xl font-bold text-teal-950 flex items-center gap-2">
+            <Waves size={20} className="text-teal-600" />
             <span>AquaSentinel "Water Twin": Monitored Basin Hydrograph</span>
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-600">
             A real-time digital twin connecting upstream wetland recharge, urban storm culverts, sensory buoys, community observations, and estuary outfalls.
           </p>
         </div>
 
         {/* Layer Filters */}
-        <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-lg text-xs font-semibold">
+        <div className="flex items-center gap-1.5 bg-teal-900/[0.05] border border-teal-800/10 p-1 rounded-lg text-xs font-semibold">
           <button
             onClick={() => setActiveLayer('all')}
-            className={`px-3 py-1.5 rounded transition ${activeLayer === 'all' ? 'bg-teal-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded transition ${activeLayer === 'all' ? 'bg-teal-700 text-white font-bold shadow-xs' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             All Twin Layers
           </button>
           <button
             onClick={() => setActiveLayer('sensors')}
-            className={`px-3 py-1.5 rounded transition ${activeLayer === 'sensors' ? 'bg-teal-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded transition ${activeLayer === 'sensors' ? 'bg-teal-700 text-white font-bold shadow-xs' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Telemetry
           </button>
           <button
             onClick={() => setActiveLayer('citizens')}
-            className={`px-3 py-1.5 rounded transition ${activeLayer === 'citizens' ? 'bg-teal-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded transition ${activeLayer === 'citizens' ? 'bg-teal-700 text-white font-bold shadow-xs' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Citizen Pulse
           </button>
           <button
             onClick={() => setActiveLayer('ecology')}
-            className={`px-3 py-1.5 rounded transition ${activeLayer === 'ecology' ? 'bg-teal-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded transition ${activeLayer === 'ecology' ? 'bg-teal-700 text-white font-bold shadow-xs' : 'text-teal-900/70 hover:text-teal-950'}`}
           >
             Ecology
           </button>
@@ -73,11 +73,11 @@ export function WaterTwin() {
       </div>
 
       {/* Schematic Digital Basin Representation */}
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950 p-6 relative overflow-hidden">
+      <div className="mt-6 rounded-2xl border border-teal-800/15 bg-teal-50/40 p-6 relative overflow-hidden">
         {/* Ambient river flow graphic */}
-        <div className="text-[11px] font-mono text-teal-400 font-bold mb-4 flex items-center justify-between">
+        <div className="text-[11px] font-mono text-teal-900 font-bold mb-4 flex items-center justify-between">
           <span>UPSTREAM MARSH &amp; HEADWATERS (+12.2 km)</span>
-          <span className="text-slate-500">← DIRECTION OF FRESHWATER FLOW ←</span>
+          <span className="text-teal-700/70 font-sans">← DIRECTION OF FRESHWATER FLOW ←</span>
           <span>COASTAL ESTUARY OUTFLOW (0.0 km)</span>
         </div>
 
@@ -91,47 +91,47 @@ export function WaterTwin() {
                 onClick={() => setSelectedStation(station)}
                 className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
                   isSelected
-                    ? 'border-teal-400 bg-slate-850 shadow-lg shadow-teal-500/10 ring-2 ring-teal-400/30'
-                    : 'border-slate-800 bg-slate-900/80 hover:bg-slate-850 hover:border-slate-700'
+                    ? 'border-teal-600 bg-white shadow-md shadow-teal-900/5 ring-2 ring-teal-600/20'
+                    : 'border-teal-800/15 bg-white/80 hover:bg-white hover:border-teal-700/40 shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-slate-400">{station.distanceKm} km from sea</span>
+                  <span className="font-mono text-[10px] text-slate-500">{station.distanceKm} km from sea</span>
                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                     station.status === 'critical'
-                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-300'
                       : station.status === 'emerging'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
                       : station.status === 'watch'
-                      ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
-                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                      ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                      : 'bg-teal-100 text-teal-800 border border-teal-300'
                   }`}>
                     {station.status}
                   </span>
                 </div>
 
-                <div className="mt-2 text-sm font-bold text-white truncate">{station.name}</div>
-                <div className="text-[11px] text-slate-400 truncate">{station.reach}</div>
+                <div className="mt-2 text-sm font-bold text-slate-900 truncate">{station.name}</div>
+                <div className="text-[11px] text-slate-500 truncate">{station.reach}</div>
 
                 {/* Key live metrics */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-1.5 text-xs">
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Turbidity:</span>
-                    <strong className="font-mono text-teal-300">{station.turbidityNtu} NTU</strong>
+                    <span className="text-slate-500">Turbidity:</span>
+                    <strong className="font-mono text-teal-900">{station.turbidityNtu} NTU</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Dissolved O₂:</span>
-                    <strong className="font-mono text-amber-300">{station.doMgL} mg/L</strong>
+                    <span className="text-slate-500">Dissolved O₂:</span>
+                    <strong className="font-mono text-amber-800">{station.doMgL} mg/L</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Citizen Reports:</span>
-                    <strong className="font-mono text-purple-300">{station.citizenReports}</strong>
+                    <span className="text-slate-500">Citizen Reports:</span>
+                    <strong className="font-mono text-purple-800">{station.citizenReports}</strong>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Risk Score:</span>
-                  <span className="font-mono font-bold text-teal-400">{station.riskScore}/100</span>
+                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500">Risk Score:</span>
+                  <span className="font-mono font-bold text-teal-800">{station.riskScore}/100</span>
                 </div>
               </button>
             );
@@ -140,15 +140,15 @@ export function WaterTwin() {
       </div>
 
       {/* Selected Station Deep-Dive Dossier Drawer */}
-      <div className="mt-6 rounded-xl border border-slate-800 bg-slate-850 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="mt-6 rounded-xl border border-teal-800/15 bg-white p-5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
-            <span className="text-[10px] font-mono uppercase text-teal-400">Digital Twin Telemetry Snapshot</span>
-            <h3 className="text-lg font-bold text-white">{selectedStation.name} ({selectedStation.id})</h3>
+            <span className="text-[10px] font-mono uppercase text-teal-700 font-bold">Digital Twin Telemetry Snapshot</span>
+            <h3 className="text-lg font-bold text-teal-950">{selectedStation.name} ({selectedStation.id})</h3>
           </div>
           <Link
             href={`/sites/${selectedStation.id}`}
-            className="flex items-center gap-1.5 text-xs font-semibold text-teal-300 hover:text-teal-200 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700"
+            className="flex items-center gap-1.5 text-xs font-semibold text-teal-800 hover:text-teal-950 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-200 transition"
           >
             <span>Open Complete Site Dossier</span>
             <ArrowRight size={13} />
@@ -156,25 +156,25 @@ export function WaterTwin() {
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-xs">
-          <div className="rounded-lg bg-slate-900 p-3 border border-slate-800">
-            <div className="text-[10px] uppercase font-mono text-slate-400">Streamflow Discharge</div>
-            <div className="mt-1 text-xl font-bold font-mono text-teal-300">{selectedStation.flowCfs} CFS</div>
-            <div className="text-[10px] text-slate-500">Live USGS / Hydrological Feed</div>
+          <div className="rounded-lg bg-teal-50/50 p-3 border border-teal-800/10">
+            <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Streamflow Discharge</div>
+            <div className="mt-1 text-xl font-bold font-mono text-teal-950">{selectedStation.flowCfs} CFS</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Live USGS / Hydrological Feed</div>
           </div>
-          <div className="rounded-lg bg-slate-900 p-3 border border-slate-800">
-            <div className="text-[10px] uppercase font-mono text-slate-400">Ecological Bio-Health</div>
-            <div className="mt-1 text-sm font-bold text-slate-200 truncate">{selectedStation.fishIndex}</div>
-            <div className="text-[10px] text-slate-500">Species Biodiversity Index</div>
+          <div className="rounded-lg bg-teal-50/50 p-3 border border-teal-800/10">
+            <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Ecological Bio-Health</div>
+            <div className="mt-1 text-sm font-bold text-slate-800 truncate">{selectedStation.fishIndex}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Species Biodiversity Index</div>
           </div>
-          <div className="rounded-lg bg-slate-900 p-3 border border-slate-800">
-            <div className="text-[10px] uppercase font-mono text-slate-400">Community Contribution</div>
-            <div className="mt-1 text-xl font-bold font-mono text-purple-300">{selectedStation.citizenReports} Reports</div>
-            <div className="text-[10px] text-slate-500">Contributes 17% to evidence weight</div>
+          <div className="rounded-lg bg-teal-50/50 p-3 border border-teal-800/10">
+            <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Community Contribution</div>
+            <div className="mt-1 text-xl font-bold font-mono text-purple-900">{selectedStation.citizenReports} Reports</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Contributes 17% to evidence weight</div>
           </div>
-          <div className="rounded-lg bg-slate-900 p-3 border border-slate-800">
-            <div className="text-[10px] uppercase font-mono text-slate-400">Decoupled Confidence</div>
-            <div className="mt-1 text-xl font-bold font-mono text-teal-300">{selectedStation.confidence}%</div>
-            <div className="text-[10px] text-teal-400 font-semibold">3 Corroborating Streams</div>
+          <div className="rounded-lg bg-teal-50/50 p-3 border border-teal-800/10">
+            <div className="text-[10px] uppercase font-mono text-slate-500 font-bold">Decoupled Confidence</div>
+            <div className="mt-1 text-xl font-bold font-mono text-teal-950">{selectedStation.confidence}%</div>
+            <div className="text-[10px] text-teal-700 font-semibold mt-0.5">3 Corroborating Streams</div>
           </div>
         </div>
       </div>

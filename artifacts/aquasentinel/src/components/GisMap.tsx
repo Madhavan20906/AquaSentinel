@@ -382,40 +382,40 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
   };
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-slate-900 ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl border border-teal-800/20 bg-white ${className}`}>
       {/* Top Map HUD Controls */}
       <div className="absolute left-3 top-3 z-[1000] flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-white shadow-md backdrop-blur-md">
-          <Layers size={13} className="text-teal-400" />
+        <span className="flex items-center gap-1.5 rounded-lg border border-teal-800/20 bg-white/95 px-3 py-1.5 text-xs font-bold text-teal-950 shadow-md backdrop-blur-md">
+          <Layers size={13} className="text-teal-600" />
           Production GIS Risk Engine
         </span>
 
         {/* Layer Toggles */}
-        <div className="hidden sm:flex items-center gap-1 rounded-lg border border-slate-700/60 bg-slate-900/80 p-1 text-[11px] text-slate-300">
+        <div className="hidden sm:flex items-center gap-1 rounded-lg border border-teal-800/20 bg-white/95 p-1 text-[11px] shadow-md backdrop-blur-md">
           <button
             onClick={() => setShowBasins(!showBasins)}
-            className={`rounded px-2 py-0.5 transition ${showBasins ? 'bg-sky-900/80 text-sky-200 font-bold' : 'text-slate-400'}`}
+            className={`rounded px-2 py-0.5 transition ${showBasins ? 'bg-sky-100 text-sky-950 font-bold border border-sky-300' : 'text-slate-600 hover:text-slate-900'}`}
             title="Toggle watershed catchment polygons"
           >
             Catchment
           </button>
           <button
             onClick={() => setShowFlowlines(!showFlowlines)}
-            className={`rounded px-2 py-0.5 transition ${showFlowlines ? 'bg-teal-900/80 text-teal-200 font-bold' : 'text-slate-400'}`}
+            className={`rounded px-2 py-0.5 transition ${showFlowlines ? 'bg-teal-100 text-teal-950 font-bold border border-teal-300' : 'text-slate-600 hover:text-slate-900'}`}
             title="Toggle hydrographic flowlines"
           >
             Flowlines
           </button>
           <button
             onClick={() => setShowPlume(!showPlume)}
-            className={`rounded px-2 py-0.5 transition ${showPlume ? 'bg-rose-900/80 text-rose-200 font-bold' : 'text-slate-400'}`}
+            className={`rounded px-2 py-0.5 transition ${showPlume ? 'bg-rose-100 text-rose-950 font-bold border border-rose-300' : 'text-slate-600 hover:text-slate-900'}`}
             title="Toggle dynamic plume dispersion corridor"
           >
             Plume Buffer
           </button>
           <button
             onClick={() => setShowIntakes(!showIntakes)}
-            className={`rounded px-2 py-0.5 transition ${showIntakes ? 'bg-indigo-900/80 text-indigo-200 font-bold' : 'text-slate-400'}`}
+            className={`rounded px-2 py-0.5 transition ${showIntakes ? 'bg-indigo-100 text-indigo-950 font-bold border border-indigo-300' : 'text-slate-600 hover:text-slate-900'}`}
             title="Toggle municipal water intakes"
           >
             Intakes
@@ -424,7 +424,7 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
 
         <button
           onClick={resetView}
-          className="flex items-center gap-1 rounded-lg border border-slate-700/60 bg-slate-900/80 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-slate-800"
+          className="flex items-center gap-1 rounded-lg border border-teal-800/20 bg-white/95 px-2.5 py-1.5 text-xs font-semibold text-teal-950 hover:bg-teal-50 shadow-md backdrop-blur-md transition"
           title="Fit all stations"
         >
           <Maximize2 size={12} /> Fit
@@ -434,7 +434,7 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
         <a
           href="/api/gis/export"
           download="aquasentinel-gis-layers.geojson"
-          className="flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-950/80 px-2.5 py-1.5 text-xs font-semibold text-teal-300 hover:bg-teal-900 transition shadow-sm"
+          className="flex items-center gap-1.5 rounded-lg border border-teal-700 bg-teal-700 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-teal-800 transition shadow-md"
           title="Export standard RFC 7946 GeoJSON FeatureCollection for QGIS / ArcGIS"
         >
           <Download size={12} />
@@ -444,54 +444,54 @@ export function GisMap({ sites, selectedSiteId, onSelectSite, className = '' }: 
 
       {/* Downstream Drinking Water Intake Alert Banner */}
       {activePlume && activePlume.affectedIntakes.length > 0 && (
-        <div className="absolute top-14 left-3 right-3 sm:right-auto sm:max-w-md z-[1000] rounded-xl border border-rose-500/40 bg-slate-950/90 p-3 text-xs text-white shadow-2xl backdrop-blur-md">
-          <div className="flex items-center gap-2 text-rose-400 font-semibold border-b border-slate-800 pb-1.5">
+        <div className="absolute top-14 left-3 right-3 sm:right-auto sm:max-w-md z-[1000] rounded-xl border border-rose-300 bg-white/95 p-3 text-xs text-slate-900 shadow-2xl backdrop-blur-md">
+          <div className="flex items-center gap-2 text-rose-700 font-bold border-b border-rose-100 pb-1.5">
             <ShieldAlert size={14} className="animate-pulse" />
             <span>Downstream Receptor Vulnerability Analysis</span>
           </div>
-          <div className="mt-2 space-y-1.5 text-[11px] text-slate-300">
+          <div className="mt-2 space-y-1.5 text-[11px]">
             {activePlume.affectedIntakes.map((intake: any) => (
-              <div key={intake.id} className="flex justify-between items-center rounded bg-slate-900/80 px-2 py-1">
+              <div key={intake.id} className="flex justify-between items-center rounded bg-rose-50/70 border border-rose-200/60 px-2 py-1">
                 <div>
-                  <div className="font-semibold text-slate-100">{intake.name}</div>
-                  <div className="text-[10px] text-slate-400">{intake.distanceKmFromOutfall} km downstream · {intake.capacityMld} MLD</div>
+                  <div className="font-semibold text-slate-900">{intake.name}</div>
+                  <div className="text-[10px] text-slate-600">{intake.distanceKmFromOutfall} km downstream · {intake.capacityMld} MLD</div>
                 </div>
                 <div className="text-right">
-                  <span className="rounded bg-rose-950 border border-rose-800 px-1.5 py-0.5 text-[10px] font-mono text-rose-300">
+                  <span className="rounded bg-rose-100 border border-rose-300 px-1.5 py-0.5 text-[10px] font-mono text-rose-800 font-bold">
                     ETA: {intake.estimatedPlumeArrivalMinutes}m
                   </span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-2 text-[10px] text-amber-300 flex items-center gap-1">
-            <AlertTriangle size={11} /> Pre-emptive gate closure recommended for intakes within plume path.
+          <div className="mt-2 text-[10px] text-amber-800 font-medium flex items-center gap-1 bg-amber-50 p-1.5 rounded border border-amber-200">
+            <AlertTriangle size={11} className="text-amber-700" /> Pre-emptive gate closure recommended for intakes within plume path.
           </div>
         </div>
       )}
 
       {/* Live Weather Overlay Card */}
       {selectedWeather && (
-        <div className="absolute bottom-3 left-3 z-[1000] max-w-xs rounded-xl border border-slate-700/80 bg-slate-900/95 p-3 text-xs text-white shadow-xl backdrop-blur-md">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span className="font-semibold text-teal-400">Live Weather Telemetry</span>
-            <span className="font-mono text-[9px] text-slate-400">{selectedWeather.source}</span>
+        <div className="absolute bottom-3 left-3 z-[1000] max-w-xs rounded-xl border border-teal-800/20 bg-white/95 p-3 text-xs text-slate-900 shadow-xl backdrop-blur-md">
+          <div className="flex items-center justify-between border-b border-teal-100 pb-2">
+            <span className="font-bold text-teal-900">Live Weather Telemetry</span>
+            <span className="font-mono text-[9px] text-slate-500 font-medium">{selectedWeather.source}</span>
           </div>
           <div className="mt-2.5 grid grid-cols-3 gap-2 text-center">
-            <div className="rounded bg-slate-800/60 p-1.5">
-              <Thermometer size={14} className="mx-auto text-amber-400" />
-              <div className="mt-1 font-mono font-bold">{selectedWeather.temperature}°C</div>
-              <div className="text-[9px] text-slate-400">Temp</div>
+            <div className="rounded bg-teal-50/80 border border-teal-100 p-1.5">
+              <Thermometer size={14} className="mx-auto text-amber-600" />
+              <div className="mt-1 font-mono font-bold text-slate-900">{selectedWeather.temperature}°C</div>
+              <div className="text-[9px] text-slate-500">Temp</div>
             </div>
-            <div className="rounded bg-slate-800/60 p-1.5">
-              <CloudRain size={14} className="mx-auto text-sky-400" />
-              <div className="mt-1 font-mono font-bold">{selectedWeather.precipitation} mm</div>
-              <div className="text-[9px] text-slate-400">Rain</div>
+            <div className="rounded bg-teal-50/80 border border-teal-100 p-1.5">
+              <CloudRain size={14} className="mx-auto text-sky-600" />
+              <div className="mt-1 font-mono font-bold text-slate-900">{selectedWeather.precipitation} mm</div>
+              <div className="text-[9px] text-slate-500">Rain</div>
             </div>
-            <div className="rounded bg-slate-800/60 p-1.5">
-              <Wind size={14} className="mx-auto text-teal-400" />
-              <div className="mt-1 font-mono font-bold">{selectedWeather.windSpeed} km/h</div>
-              <div className="text-[9px] text-slate-400">Wind</div>
+            <div className="rounded bg-teal-50/80 border border-teal-100 p-1.5">
+              <Wind size={14} className="mx-auto text-teal-600" />
+              <div className="mt-1 font-mono font-bold text-slate-900">{selectedWeather.windSpeed} km/h</div>
+              <div className="text-[9px] text-slate-500">Wind</div>
             </div>
           </div>
         </div>

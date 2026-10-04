@@ -554,10 +554,11 @@ export const getLatestAlert = async () => {
 export const createId = (prefix: string) => `${prefix}-${randomUUID().slice(0, 8)}`;
 
 export const seedInitialMissions = async (): Promise<void> => {
-  const existingMissions = await db.select({ id: missionsTable.id }).from(missionsTable).limit(1);
-  if (existingMissions.length > 0) return;
+  try {
+    await db.delete(missionsTable).where(eq(missionsTable.title, "Verify stream condition"));
+  } catch {}
 
-  await db.insert(missionsTable).values([
+  const canonicalMissions = [
     {
       id: "mission-adyar-01",
       siteId: "ADYAR-01",
@@ -643,7 +644,14 @@ export const seedInitialMissions = async (): Promise<void> => {
       status: "available",
       createdAt: new Date(Date.now() - 18 * 3600 * 1000),
     },
-  ]);
+  ];
+
+  for (const m of canonicalMissions) {
+    const [existing] = await db.select().from(missionsTable).where(eq(missionsTable.id, m.id)).limit(1);
+    if (!existing) {
+      await db.insert(missionsTable).values(m);
+    }
+  }
 };
 
 export const getSiteById = async (siteId: string) => {

@@ -43,18 +43,18 @@
 :root {
   --background: 168 36% 96%;
   --foreground: 190 35% 15%;
-  --border: 172 24% 84%;
-  --input: 172 24% 84%;
+  --border: 170 20% 85%;
+  --input: 170 20% 85%;
   --ring: 174 77% 35%;
-  --card: 168 32% 98.4%;
+  --card: 0 0% 100%;
   --card-foreground: 190 35% 15%;
-  --card-border: 172 26% 85%;
+  --card-border: 170 20% 86%;
   --primary: 174 77% 29%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 162 38% 92%;
-  --secondary-foreground: 172 55% 20%;
-  --muted: 168 25% 92%;
-  --muted-foreground: 184 20% 40%;
+  --secondary: 157 42% 91%;
+  --secondary-foreground: 170 53% 22%;
+  --muted: 166 22% 92%;
+  --muted-foreground: 188 20% 36%;
   --accent: 36 91% 63%;
   --accent-foreground: 28 58% 18%;
   --destructive: 4 63% 44%;

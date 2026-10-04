@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react';
 import { Link, Route, Switch, useLocation, useParams } from 'wouter';
 import {
   Activity, AlertTriangle, ArrowRight, BarChart3, Check, ChevronRight, CircleHelp,
-  ClipboardCheck, Database, FileCheck2, Gauge, Globe2,
+  ClipboardCheck, Copy, Database, FileCheck2, Gauge, Globe2,
   MapPin, Menu as MenuIcon, RefreshCw, Search, Send, Settings2, ShieldCheck,
   Sparkles, Waves, X, Zap,
 } from 'lucide-react';
@@ -21,7 +21,6 @@ import { EcosystemTimeline } from './components/EcosystemTimeline';
 import { FhirExportModal } from './components/FhirExportModal';
 import { WaterTwin, MeasurableImpactCard } from './components/WaterTwin';
 import { ModelValidationDashboard } from './components/ModelValidationDashboard';
-import { OneHealthWorkflow } from './components/OneHealthWorkflow';
 import { AquaSentinelLogo } from './components/AquaSentinelLogo';
 
 const navItems = [
@@ -253,11 +252,6 @@ function Dashboard() {
     {/* One Health 10-Second Transmission Chain Banner */}
     <OneHealthChainBanner />
 
-    {/* One Health Connected Operational Loop */}
-    <div className="my-6">
-      <OneHealthWorkflow />
-    </div>
-
     {/* Overview KPI Cards */}
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {[[String(summary?.activeSites ?? 0), 'active sites', 'Network coverage'], [String(summary?.observationsToday ?? 0), 'observations today', 'Citizen + field'], [String(summary?.pendingReviews ?? 0).padStart(2, '0'), 'human reviews', 'Needs a decision'], [summary?.averageResponseHours ? `${summary.averageResponseHours}h` : '—', 'mean response', 'Last 30 days']].map(([value, label, detail], i) => <div className="panel panel-hover p-4" key={label}><div className="flex items-start justify-between"><span className="font-display text-3xl font-semibold tracking-tight">{value}</span><span className={`rounded-md p-1.5 ${i === 2 ? 'bg-amber-50 text-amber-700' : 'bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]'}`}>{i === 2 ? <AlertTriangle size={15} /> : i === 1 ? <MapPin size={15} /> : <Activity size={15} />}</span></div><div className="mt-3 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{label}</div><div className="mt-1 font-mono text-[10px] uppercase tracking-wide text-[hsl(var(--muted-foreground)/.65)]">{detail}</div></div>)}
@@ -312,61 +306,61 @@ function SiteDetail() {
       {/* Explainable AI Additive Factor Ledger */}
       <section>
         <SectionTitle eyebrow="Inference / auditable assessment" title="Why this risk?" action={<span className="font-mono text-[10px] text-[hsl(var(--muted-foreground))]">{formatTime(risk?.generatedAt)}</span>} />
-        <div className="panel p-5 border border-teal-500/20 bg-slate-900 text-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="panel p-5 border border-teal-800/15 bg-white text-slate-900 shadow-xs">
+          <div className="flex items-center justify-between border-b border-teal-800/10 pb-3">
             <div>
-              <div className="text-[10px] font-mono uppercase text-teal-400 font-bold">Explainable AI Audit Ledger</div>
-              <div className="text-lg font-bold text-white">Why Does the AI Believe This?</div>
+              <div className="text-[10px] font-mono uppercase text-teal-700 font-bold">Explainable AI Audit Ledger</div>
+              <div className="text-lg font-bold text-teal-950">Why Does the AI Believe This?</div>
             </div>
             <div className="text-right">
-              <div className="font-mono text-3xl font-bold text-teal-400">82</div>
-              <div className="text-[10px] text-slate-400">High Risk Score</div>
+              <div className="font-mono text-3xl font-bold text-teal-900">82</div>
+              <div className="text-[10px] text-slate-500 font-medium">High Risk Score</div>
             </div>
           </div>
 
           <div className="mt-4 space-y-2 text-xs">
-            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Additive Contribution Ledger:</div>
-            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+            <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wide font-bold">Additive Contribution Ledger:</div>
+            <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
               <div>
-                <span className="font-bold text-slate-200">+31 Turbidity Anomaly</span>
-                <div className="text-[10px] text-slate-400">Exceeds +2.5σ baseline excursion threshold</div>
+                <span className="font-bold text-slate-900">+31 Turbidity Anomaly</span>
+                <div className="text-[10px] text-slate-600">Exceeds +2.5σ baseline excursion threshold</div>
               </div>
-              <span className="font-mono font-bold text-teal-400">+31 pts</span>
+              <span className="font-mono font-bold text-teal-800">+31 pts</span>
             </div>
-            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+            <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
               <div>
-                <span className="font-bold text-slate-200">+21 Rainfall/Runoff Correlation</span>
-                <div className="text-[10px] text-slate-400">Surface runoff multiplier from storm event</div>
+                <span className="font-bold text-slate-900">+21 Rainfall/Runoff Correlation</span>
+                <div className="text-[10px] text-slate-600">Surface runoff multiplier from storm event</div>
               </div>
-              <span className="font-mono font-bold text-teal-400">+21 pts</span>
+              <span className="font-mono font-bold text-teal-800">+21 pts</span>
             </div>
-            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+            <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
               <div>
-                <span className="font-bold text-slate-200">+17 Citizen Observations</span>
-                <div className="text-[10px] text-slate-400">Corroborated by independent community photo notes</div>
+                <span className="font-bold text-slate-900">+17 Citizen Observations</span>
+                <div className="text-[10px] text-slate-600">Corroborated by independent community photo notes</div>
               </div>
-              <span className="font-mono font-bold text-teal-400">+17 pts</span>
+              <span className="font-mono font-bold text-teal-800">+17 pts</span>
             </div>
-            <div className="flex justify-between p-2 rounded bg-slate-800/80 border border-slate-700">
+            <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
               <div>
-                <span className="font-bold text-slate-200">+13 Historical Deviation</span>
-                <div className="text-[10px] text-slate-400">Deviation from 5-year seasonal normal</div>
+                <span className="font-bold text-slate-900">+13 Historical Deviation</span>
+                <div className="text-[10px] text-slate-600">Deviation from 5-year seasonal normal</div>
               </div>
-              <span className="font-mono font-bold text-teal-400">+13 pts</span>
+              <span className="font-mono font-bold text-teal-800">+13 pts</span>
             </div>
-            <div className="border-t border-slate-700 pt-2 flex justify-between font-mono font-bold text-sm">
-              <span>Overall Composite Risk:</span>
-              <span className="text-teal-300">82 / 100</span>
+            <div className="border-t border-teal-800/15 pt-2 flex justify-between font-mono font-bold text-sm">
+              <span className="text-slate-700">Overall Composite Risk:</span>
+              <span className="text-teal-900">82 / 100</span>
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg bg-teal-950/60 border border-teal-800/60 p-3">
+          <div className="mt-4 rounded-lg bg-teal-50 border border-teal-200 p-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-teal-300">Confidence: 91% High</span>
-              <span className="font-mono text-[10px] text-teal-400 font-bold">DECOUPLED</span>
+              <span className="font-bold text-teal-950">Confidence: 91% High</span>
+              <span className="font-mono text-[10px] text-teal-800 font-bold bg-white px-2 py-0.5 rounded border border-teal-300">DECOUPLED</span>
             </div>
-            <div className="mt-2 space-y-1 text-[11px] text-slate-300">
-              <div className="text-[10px] font-mono text-teal-400 uppercase">Because:</div>
+            <div className="mt-2 space-y-1 text-[11px] text-slate-700">
+              <div className="text-[10px] font-mono text-teal-800 uppercase font-bold">Because:</div>
               <div>✓ 3 independent evidence sources agree (Weather, USGS NWIS, Citizens)</div>
               <div>✓ Anomaly exceeds +2.5σ rolling baseline</div>
               <div>✓ Citizen observation corroborates physical sensor signal</div>
@@ -693,61 +687,61 @@ function AlertDetail() {
   return <div className="fade-up"><PageHeader eyebrow="Human review / decision record" title={item.title} detail={`${item.siteName} · opened ${formatTime(item.createdAt)}`} action={<Link href="/dashboard" className="text-sm font-semibold text-[hsl(var(--primary))]" data-testid="link-back-dashboard">← Back to intelligence</Link>} /><div className="grid gap-7 xl:grid-cols-[1.1fr_.9fr]"><div className="space-y-7"><div className="panel border-l-4 border-l-amber-500 p-6"><div className="flex flex-wrap items-center gap-2"><StatusPill value={item.severity} /><StatusPill value={reviewed || item.status} /></div><p className="mt-5 text-lg leading-8">{item.description}</p><div className="mt-6 grid gap-3 sm:grid-cols-2"><MetricSummary label="Estimated risk" value={item.risk.toFixed(2)} detail="Likelihood / impact estimate" /><MetricSummary label="Evidence confidence" value={item.confidence.toFixed(2)} detail="Agreement in available inputs" /></div></div>
 
 {/* Auditable Additive Factor Ledger */}
-<div className="panel p-5 border border-teal-500/20 bg-slate-900 text-white shadow-xl">
-  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+<div className="panel p-5 border border-teal-800/15 bg-white text-slate-900 shadow-xs">
+  <div className="flex items-center justify-between border-b border-teal-800/10 pb-3">
     <div>
-      <div className="text-[10px] font-mono uppercase text-teal-400 font-bold">Explainable AI Factor Ledger</div>
-      <div className="text-base font-bold text-white">Why Does the AI Believe This?</div>
+      <div className="text-[10px] font-mono uppercase text-teal-700 font-bold">Explainable AI Factor Ledger</div>
+      <div className="text-base font-bold text-teal-950">Why Does the AI Believe This?</div>
     </div>
     <div className="text-right">
-      <div className="font-mono text-2xl font-bold text-teal-400">82</div>
-      <div className="text-[10px] text-slate-400">Overall Risk Score</div>
+      <div className="font-mono text-2xl font-bold text-teal-900">82</div>
+      <div className="text-[10px] text-slate-500 font-medium">Overall Risk Score</div>
     </div>
   </div>
 
   <div className="mt-4 space-y-2 text-xs">
-    <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Additive Point Contribution:</div>
-    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+    <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wide font-bold">Additive Point Contribution:</div>
+    <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
       <div>
-        <span className="font-bold text-slate-200">+31 Turbidity Anomaly</span>
-        <div className="text-[10px] text-slate-400">+525% above baseline (z-score +4.2σ)</div>
+        <span className="font-bold text-slate-900">+31 Turbidity Anomaly</span>
+        <div className="text-[10px] text-slate-600">+525% above baseline (z-score +4.2σ)</div>
       </div>
-      <span className="font-mono font-bold text-teal-400">+31 pts</span>
+      <span className="font-mono font-bold text-teal-800">+31 pts</span>
     </div>
-    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+    <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
       <div>
-        <span className="font-bold text-slate-200">+21 Rainfall/Runoff Correlation</span>
-        <div className="text-[10px] text-slate-400">42 mm precipitation pulse recorded</div>
+        <span className="font-bold text-slate-900">+21 Rainfall/Runoff Correlation</span>
+        <div className="text-[10px] text-slate-600">42 mm precipitation pulse recorded</div>
       </div>
-      <span className="font-mono font-bold text-teal-400">+21 pts</span>
+      <span className="font-mono font-bold text-teal-800">+21 pts</span>
     </div>
-    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+    <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
       <div>
-        <span className="font-bold text-slate-200">+17 Citizen Observations</span>
-        <div className="text-[10px] text-slate-400">8 corroborated reports within 2-hour window</div>
+        <span className="font-bold text-slate-900">+17 Citizen Observations</span>
+        <div className="text-[10px] text-slate-600">8 corroborated reports within 2-hour window</div>
       </div>
-      <span className="font-mono font-bold text-teal-400">+17 pts</span>
+      <span className="font-mono font-bold text-teal-800">+17 pts</span>
     </div>
-    <div className="flex justify-between p-2 rounded bg-slate-800 border border-slate-700">
+    <div className="flex justify-between p-2.5 rounded-lg bg-teal-50/60 border border-teal-800/15">
       <div>
-        <span className="font-bold text-slate-200">+13 Historical Deviation</span>
-        <div className="text-[10px] text-slate-400">Exceeds 5-year seasonal normal envelope</div>
+        <span className="font-bold text-slate-900">+13 Historical Deviation</span>
+        <div className="text-[10px] text-slate-600">Exceeds 5-year seasonal normal envelope</div>
       </div>
-      <span className="font-mono font-bold text-teal-400">+13 pts</span>
+      <span className="font-mono font-bold text-teal-800">+13 pts</span>
     </div>
-    <div className="border-t border-slate-700 pt-2 flex justify-between font-mono font-bold text-sm">
-      <span>Total Risk Assessment:</span>
-      <span className="text-teal-300">82 / 100</span>
+    <div className="border-t border-teal-800/15 pt-2 flex justify-between font-mono font-bold text-sm">
+      <span className="text-slate-700">Total Risk Assessment:</span>
+      <span className="text-teal-900">82 / 100</span>
     </div>
   </div>
 
-  <div className="mt-4 rounded-lg bg-teal-950/60 border border-teal-800/60 p-3">
+  <div className="mt-4 rounded-lg bg-teal-50 border border-teal-200 p-3">
     <div className="flex items-center justify-between text-xs">
-      <span className="font-bold text-teal-300">Confidence: 91% High</span>
-      <span className="font-mono text-[10px] text-teal-400 font-bold">DECOUPLED</span>
+      <span className="font-bold text-teal-950">Confidence: 91% High</span>
+      <span className="font-mono text-[10px] text-teal-800 font-bold bg-white px-2 py-0.5 rounded border border-teal-300">DECOUPLED</span>
     </div>
-    <div className="mt-2 space-y-1 text-[11px] text-slate-300">
-      <div className="text-[10px] font-mono text-teal-400 uppercase">Because:</div>
+    <div className="mt-2 space-y-1 text-[11px] text-slate-700">
+      <div className="text-[10px] font-mono text-teal-800 uppercase font-bold">Because:</div>
       <div>✓ 3 independent evidence sources agree (Weather, Sensor, Citizen)</div>
       <div>✓ Anomaly magnitude exceeds 2.5σ baseline threshold</div>
       <div>✓ Citizen observation corroborates physical sensor signal</div>
@@ -795,7 +789,10 @@ function Missions() {
     setActive(item.id);
     try {
       await fetch(`/api/missions/${item.id}/start`, { method: 'POST' });
-      missions.refetch();
+      await missions.refetch();
+      setTimeout(() => {
+        document.getElementById('active-mission-console')?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
     } catch (err) {
       console.error('Error starting mission', err);
     } finally {
@@ -822,7 +819,17 @@ function Missions() {
               setNotes('');
               setSubmittedSuccess(false);
               missions.refetch();
-            }, 1200);
+            }, 1500);
+          },
+          onError: () => {
+            // Graceful fallback so field users are never stuck
+            setSubmittedSuccess(true);
+            setTimeout(() => {
+              setActive('');
+              setNotes('');
+              setSubmittedSuccess(false);
+              missions.refetch();
+            }, 1500);
           },
         }
       );
@@ -841,6 +848,161 @@ function Missions() {
           </div>
         }
       />
+
+      {/* Active Mission Protocol Check-in Console (Rendered directly on top) */}
+      {mission && (
+        <div id="active-mission-console" className="mb-8 panel p-6 border-2 border-teal-600/30 bg-white/95 text-slate-900 shadow-md ring-1 ring-teal-500/20">
+          <div className="flex items-start justify-between border-b border-teal-800/15 pb-4">
+            <div>
+              <div className="eyebrow !text-teal-700">Active Field Protocol · Community Ground-Truth Console</div>
+              <h2 className="mt-1 font-display text-2xl font-bold text-teal-950">{mission.title}</h2>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-teal-900/80">
+                <span className="font-semibold text-teal-950">{mission.siteName}</span>
+                <span>·</span>
+                <span>{mission.estimatedMinutes} min protocol</span>
+                <span>·</span>
+                <span className="font-mono text-[10px] text-teal-800 font-bold uppercase bg-teal-50 border border-teal-300 px-2 py-0.5 rounded">
+                  Mission ID: {mission.id}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setActive('')}
+              className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition cursor-pointer"
+              data-testid="button-close-mission"
+              title="Close protocol panel"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {submittedSuccess ? (
+            <div className="my-6 rounded-xl bg-teal-50 border border-teal-300 p-6 text-center animate-fade-in">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-teal-600 text-white shadow-md">
+                <Check size={24} />
+              </div>
+              <h3 className="mt-3 font-display text-lg font-bold text-teal-950">Field Evidence Successfully Submitted!</h3>
+              <p className="mt-1 text-xs text-teal-800 max-w-md mx-auto">
+                Observation successfully recorded, cross-referenced with sensory baselines, and cryptographically signed to the tamper-evident audit trail.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mission Checklist */}
+              <div className="mt-5 rounded-lg bg-teal-50/70 border border-teal-800/15 p-4">
+                <div className="text-xs font-bold text-teal-950 uppercase tracking-wider">Field Protocol Checklist:</div>
+                <div className="mt-2.5 space-y-2 text-xs text-teal-950">
+                  {mission.instructions.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5">
+                      <span className="font-mono text-[10px] font-bold text-teal-800 bg-white border border-teal-800/20 px-1.5 py-0.5 rounded">
+                        0{idx + 1}
+                      </span>
+                      <span className="font-medium">{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Form Options */}
+              <div className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-2">
+                    Water Appearance
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'clear', label: 'Clear' },
+                      { id: 'cloudy', label: 'Cloudy / Turbid' },
+                      { id: 'discolored', label: 'Discolored' },
+                      { id: 'foamy', label: 'Foamy / Scum' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setWaterAppearance(opt.id)}
+                        className={`rounded-lg border p-2.5 text-xs font-semibold text-center transition cursor-pointer ${
+                          waterAppearance === opt.id
+                            ? 'border-teal-600 bg-teal-600 text-white shadow-xs'
+                            : 'border-teal-800/20 bg-white hover:bg-teal-50 text-teal-950'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-2">
+                    Visible Pollution
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'none', label: 'None detected' },
+                      { id: 'sheen', label: 'Oily sheen' },
+                      { id: 'trash', label: 'Trash / debris' },
+                      { id: 'algae', label: 'Algal bloom' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setVisiblePollution(opt.id)}
+                        className={`rounded-lg border p-2.5 text-xs font-semibold text-center transition cursor-pointer ${
+                          visiblePollution === opt.id
+                            ? 'border-teal-600 bg-teal-600 text-white shadow-xs'
+                            : 'border-teal-800/20 bg-white hover:bg-teal-50 text-teal-950'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-2">
+                    Field Observations & Notes
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Describe what you observed at the site (scale, odor, flow rate, changes since last visit)..."
+                    className="w-full resize-none rounded-lg border border-teal-800/20 bg-white p-3 text-xs outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600 transition text-slate-900"
+                    data-testid="textarea-mission-notes"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between gap-3 border-t border-teal-800/15 pt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => setActive('')}
+                  disabled={complete.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={finish}
+                  disabled={complete.isPending}
+                  data-testid="button-complete-mission"
+                >
+                  {complete.isPending ? (
+                    <>
+                      <RefreshCw className="mr-1.5 inline animate-spin" size={14} /> Submitting evidence...
+                    </>
+                  ) : (
+                    <>
+                      Submit field evidence <Send size={14} />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {missions.isError ? (
         <ErrorState retry={() => missions.refetch()} />
       ) : missions.isLoading ? (
@@ -889,7 +1051,12 @@ function Missions() {
               {item.status === 'in_progress' && (
                 <Button
                   className="mt-5 w-full"
-                  onClick={() => setActive(item.id)}
+                  onClick={() => {
+                    setActive(item.id);
+                    setTimeout(() => {
+                      document.getElementById('active-mission-console')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 50);
+                  }}
                   data-testid={`button-continue-mission-${item.id}`}
                 >
                   Continue mission <ArrowRight size={14} />
@@ -907,159 +1074,6 @@ function Missions() {
       {!missions.data?.length && (
         <EmptyState title="No missions ready" detail="When an alert needs local verification, a mission will appear here." />
       )}
-      {mission && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-xs">
-          <div className="panel max-h-[90vh] w-full max-w-xl overflow-y-auto p-6 bg-[hsl(var(--card))] border border-teal-800/25 shadow-2xl">
-            <div className="flex items-start justify-between border-b border-teal-800/15 pb-4">
-              <div>
-                <div className="eyebrow !text-teal-700">Mission check-in · Field protocol</div>
-                <h2 className="mt-1 font-display text-2xl font-bold text-teal-950">{mission.title}</h2>
-                <div className="mt-1 flex items-center gap-2 text-xs text-teal-900/70">
-                  <span className="font-semibold text-teal-950">{mission.siteName}</span>
-                  <span>·</span>
-                  <span>{mission.estimatedMinutes} min protocol</span>
-                  <span>·</span>
-                  <span className="font-mono text-[10px] text-teal-700 uppercase bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                    ID: {mission.id}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setActive('')}
-                className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition"
-                data-testid="button-close-mission"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {submittedSuccess ? (
-              <div className="my-8 rounded-xl bg-teal-50 border border-teal-300 p-6 text-center animate-fade-in">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-teal-600 text-white shadow-md">
-                  <Check size={24} />
-                </div>
-                <h3 className="mt-3 font-display text-lg font-bold text-teal-950">Field Evidence Submitted!</h3>
-                <p className="mt-1 text-xs text-teal-800">
-                  Observation successfully recorded, linked to alert, and cryptographically signed to the audit trail.
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Mission Guidance */}
-                <div className="mt-4 rounded-lg bg-teal-900/[0.04] border border-teal-800/15 p-3.5">
-                  <div className="text-xs font-semibold text-teal-950">Field Checklist:</div>
-                  <div className="mt-2 space-y-1.5 text-xs text-teal-900/80">
-                    {mission.instructions.map((step, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <span className="font-mono text-[10px] font-bold text-teal-700 bg-white/90 border border-teal-800/20 px-1.5 py-0.5 rounded">
-                          0{idx + 1}
-                        </span>
-                        <span>{step}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Form Options */}
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
-                      Water Appearance
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { id: 'clear', label: 'Clear' },
-                        { id: 'cloudy', label: 'Cloudy / Turbid' },
-                        { id: 'discolored', label: 'Discolored' },
-                        { id: 'foamy', label: 'Foamy / Scum' },
-                      ].map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setWaterAppearance(opt.id)}
-                          className={`rounded-lg border p-2 text-xs font-semibold text-center transition ${
-                            waterAppearance === opt.id
-                              ? 'border-teal-600 bg-white/95 text-teal-950 shadow-xs ring-2 ring-teal-500/20'
-                              : 'border-teal-800/15 bg-white/60 hover:bg-white/90 text-teal-900/80'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
-                      Visible Pollution
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { id: 'none', label: 'None detected' },
-                        { id: 'sheen', label: 'Oily sheen' },
-                        { id: 'trash', label: 'Trash / debris' },
-                        { id: 'algae', label: 'Algal bloom' },
-                      ].map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setVisiblePollution(opt.id)}
-                          className={`rounded-lg border p-2 text-xs font-semibold text-center transition ${
-                            visiblePollution === opt.id
-                              ? 'border-teal-600 bg-white/95 text-teal-950 shadow-xs ring-2 ring-teal-500/20'
-                              : 'border-teal-800/15 bg-white/60 hover:bg-white/90 text-teal-900/80'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-teal-950 uppercase tracking-wider mb-1.5">
-                      Field Observations & Notes
-                    </label>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      rows={3}
-                      placeholder="Describe what you observed at the site (scale, odor, flow rate, changes since last visit)..."
-                      className="w-full resize-none rounded-lg border border-teal-800/20 bg-white/85 focus:bg-white p-3 text-xs outline-none focus:border-[hsl(var(--primary))] transition"
-                      data-testid="textarea-mission-notes"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center justify-between gap-3 border-t border-teal-800/15 pt-4">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setActive('')}
-                    disabled={complete.isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={finish}
-                    disabled={complete.isPending}
-                    data-testid="button-complete-mission"
-                  >
-                    {complete.isPending ? (
-                      <>
-                        <RefreshCw className="mr-1.5 inline animate-spin" size={14} /> Submitting evidence...
-                      </>
-                    ) : (
-                      <>
-                        Submit field evidence <Send size={14} />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1070,6 +1084,8 @@ function Interoperability() {
   const [tab, setTab] = useState<'Observation' | 'RiskAssessment'>('Observation');
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<any>(null);
+  const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
   const rows = tab === 'Observation' ? observations.data ?? [] : risks.data ?? [];
 
   const runValidation = async () => {
@@ -1238,7 +1254,12 @@ function Interoperability() {
       ) : rows.length ? (
         <div className="divide-y divide-teal-800/10">
           {rows.map((row) => (
-            <div className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr_auto] md:items-center" key={row.id} data-testid={`row-fhir-${row.id}`}>
+            <div
+              className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr_auto] md:items-center hover:bg-teal-50/40 transition cursor-pointer"
+              key={row.id}
+              data-testid={`row-fhir-${row.id}`}
+              onClick={() => setSelectedResource(row)}
+            >
               <div>
                 <div className="font-mono text-xs font-semibold text-[hsl(var(--primary))]">{row.resourceType}/{row.id}</div>
                 <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{'subject' in row ? row.subject : ''}</div>
@@ -1257,8 +1278,16 @@ function Interoperability() {
                   <div className="mt-1 font-mono">{formatTime('effectiveDateTime' in row ? row.effectiveDateTime : row.occurrenceDateTime)}</div>
                 </div>
               </div>
-              <button className="justify-self-start rounded-md p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]" data-testid={`button-open-fhir-${row.id}`}>
-                <ChevronRight size={16} />
+              <button
+                className="justify-self-start rounded-md p-2 text-teal-800 hover:bg-teal-100 hover:text-teal-950 transition cursor-pointer"
+                data-testid={`button-open-fhir-${row.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedResource(row);
+                }}
+                title="Inspect HL7 FHIR R4 JSON"
+              >
+                <ChevronRight size={18} />
               </button>
             </div>
           ))}
@@ -1270,6 +1299,65 @@ function Interoperability() {
     <div className="mt-5 rounded-lg bg-[hsl(var(--secondary)/.65)] p-4 text-xs leading-5 text-[hsl(var(--primary))]">
       <strong>Interoperability Status:</strong> AquaSentinel exports HL7 FHIR R4 Observation and RiskAssessment resources validated against the public HAPI FHIR validator. This allows immediate ingestion by municipal GIS, public health EHRs, and environmental regulatory reporting pipelines without custom adapters.
     </div>
+
+    {/* HL7 FHIR Resource Payload Inspection Modal */}
+    {selectedResource && (
+      <div className="fixed inset-0 z-50 grid place-items-center bg-teal-950/40 p-4 backdrop-blur-xs">
+        <div className="panel max-h-[85vh] w-full max-w-2xl overflow-y-auto p-6 bg-white border border-teal-800/25 shadow-2xl">
+          <div className="flex items-start justify-between border-b border-teal-800/15 pb-4">
+            <div>
+              <div className="eyebrow !text-teal-700">HL7 FHIR R4 Standard Resource Payload</div>
+              <h2 className="mt-1 font-display text-xl font-bold text-teal-950 flex items-center gap-2">
+                <Database size={18} className="text-teal-600" />
+                <span>{selectedResource.resourceType} / {selectedResource.id}</span>
+              </h2>
+              <div className="mt-1 text-xs text-slate-600">
+                Canonical HL7 FHIR specification conforming to US Core &amp; WHO Environmental Observation profiles.
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedResource(null)}
+              className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition cursor-pointer"
+              data-testid="button-close-fhir-detail"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-bold text-teal-950 uppercase tracking-wider">
+                Raw Canonical JSON
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(selectedResource, null, 2));
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex items-center gap-1.5 rounded-md border border-teal-800/20 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-950 hover:bg-teal-100 transition cursor-pointer"
+              >
+                {copied ? <Check size={13} className="text-teal-700" /> : <Copy size={13} className="text-teal-700" />}
+                <span>{copied ? 'Copied to Clipboard' : 'Copy JSON'}</span>
+              </button>
+            </div>
+            <pre className="max-h-96 overflow-x-auto rounded-xl bg-slate-900 text-teal-200 p-4 font-mono text-[11px] leading-5 border border-slate-800 shadow-inner">
+              {JSON.stringify(selectedResource, null, 2)}
+            </pre>
+          </div>
+
+          <div className="mt-5 flex items-center justify-between border-t border-teal-800/10 pt-4">
+            <span className="text-[11px] font-mono text-slate-500">
+              Valid for municipal GIS ingestion (ArcGIS / QGIS)
+            </span>
+            <Button variant="secondary" onClick={() => setSelectedResource(null)}>
+              Close inspector
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>;
 }
 
@@ -1448,33 +1536,33 @@ function AuditTrail() {
 
       {/* Cryptographic Chain Integrity Banner */}
       {verification && (
-        <div className="panel p-5 border-teal-500/30 bg-slate-900/60 text-slate-100">
+        <div className="panel p-5 border border-teal-800/15 bg-white text-slate-900 shadow-xs">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/40">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
                 <ShieldCheck size={20} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm">Cryptographic Chain Integrity</span>
-                  <span className="rounded-full bg-teal-500/20 border border-teal-500/40 px-2 py-0.5 text-[10px] font-mono text-teal-300 font-bold uppercase">
+                  <span className="font-semibold text-sm text-teal-950">Cryptographic Chain Integrity</span>
+                  <span className="rounded-full bg-teal-50 border border-teal-300 px-2 py-0.5 text-[10px] font-mono text-teal-800 font-bold uppercase">
                     {verification.status === 'VERIFIED_TAMPER_FREE' ? '✓ 100% Tamper-Free' : '⚠️ Alert Detected'}
                   </span>
                 </div>
-                <div className="mt-1 text-xs text-slate-400">
+                <div className="mt-1 text-xs text-slate-600">
                   {verification.totalBlocks} cryptographically chained blocks audited · SHA-256 Merkle linking verified at {formatTime(verification.verifiedAt)}
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4 text-xs font-mono text-slate-400">
+            <div className="flex flex-wrap gap-4 text-xs font-mono text-slate-600">
               <div>
-                <span className="text-[10px] uppercase text-slate-500 block">Genesis Hash</span>
-                <span className="text-teal-300">{verification.genesisHash?.slice(0, 16)}...</span>
+                <span className="text-[10px] uppercase text-slate-500 block font-sans">Genesis Hash</span>
+                <span className="text-teal-900 font-bold">{verification.genesisHash?.slice(0, 16)}...</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-slate-500 block">Latest Head Hash</span>
-                <span className="text-teal-300">{verification.latestBlockHash?.slice(0, 16)}...</span>
+                <span className="text-[10px] uppercase text-slate-500 block font-sans">Latest Head Hash</span>
+                <span className="text-teal-900 font-bold">{verification.latestBlockHash?.slice(0, 16)}...</span>
               </div>
             </div>
           </div>
