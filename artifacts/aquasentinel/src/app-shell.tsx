@@ -94,89 +94,123 @@ function Shell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [fhirModalOpen, setFhirModalOpen] = useState(false);
-  return <div className="noise min-h-[100dvh] lg:flex">
-    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[252px] flex-col bg-[hsl(var(--sidebar))] text-slate-100 px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="px-2"><Logo light /></div>
-      <div className="mt-8 px-3">
-        <div className="eyebrow !text-amber-300 font-bold tracking-wider">Operational loop</div>
-        <p className="mt-1.5 text-xs leading-5 text-teal-100/80">Observe → explain → decide<br />Human control stays in the loop.</p>
-      </div>
-      <nav className="mt-7 flex-1 space-y-1.5" aria-label="Primary navigation">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = location === href || (href === '/dashboard' && location.startsWith('/sites'));
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMobileOpen(false)}
-              data-testid={`link-nav-${label.toLowerCase().replace(' ', '-')}`}
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                active
-                  ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
-                  : 'text-slate-200 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <Icon
-                size={18}
-                strokeWidth={active ? 2.3 : 1.9}
-                className={active ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
-              />
-              <span>{label}</span>
-              {active && <ChevronRight size={15} className="ml-auto text-amber-300" />}
-            </Link>
-          );
-        })}
-        <div className="my-4 border-t border-teal-800/60" />
-        <Link
-          href="/settings"
-          onClick={() => setMobileOpen(false)}
-          data-testid="link-nav-settings"
-          className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-            location === '/settings'
-              ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
-              : 'text-slate-200 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Settings2
-            size={18}
-            strokeWidth={location === '/settings' ? 2.3 : 1.9}
-            className={location === '/settings' ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
-          />
-          <span>Context & settings</span>
-          {location === '/settings' && <ChevronRight size={15} className="ml-auto text-amber-300" />}
-        </Link>
-      </nav>
-      <div className="rounded-xl border border-teal-800/60 bg-teal-950/40 p-3.5 backdrop-blur-xs">
-        <div className="flex items-center gap-2 text-xs font-semibold text-white">
-          <span className="status-dot text-emerald-400" />Demo environment
+  return (
+    <div className="noise h-screen w-full overflow-hidden lg:flex">
+      {/* Fixed Left Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[252px] shrink-0 flex-col bg-[hsl(var(--sidebar))] text-slate-100 px-4 py-5 transition-transform duration-300 lg:static lg:translate-x-0 overflow-y-auto ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="px-2 shrink-0">
+          <Logo light />
         </div>
-        <p className="mt-1.5 text-[11px] leading-4 text-teal-100/75">
-          Signals are simulated for this workspace. No live public-health action is triggered.
-        </p>
-      </div>
-    </aside>
-    {mobileOpen && <button aria-label="Close navigation" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-30 bg-[hsl(var(--sidebar)/.35)] lg:hidden" data-testid="button-close-navigation"><X className="absolute right-4 top-4 text-white" /></button>}
-    <div className="min-w-0 flex-1">
-      <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border)/.7)] bg-[hsl(var(--background)/.9)] px-4 backdrop-blur-md sm:px-6 lg:px-9">
-        <div className="flex items-center gap-3"><button className="rounded-lg p-2 hover:bg-[hsl(var(--muted))] lg:hidden" onClick={() => setMobileOpen(true)} data-testid="button-open-navigation"><MenuIcon size={19} /></button><div className="hidden text-xs text-[hsl(var(--muted-foreground))] sm:block"><span className="font-mono text-[hsl(var(--primary))]">AS /</span> municipal watershed intelligence</div></div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setFhirModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-teal-600/30 bg-teal-50/80 px-3 py-1.5 text-xs font-bold text-teal-900 hover:bg-teal-100 transition shadow-2xs"
-            title="Export canonical HL7 FHIR R4 records to municipal EHR or public health systems"
+        <div className="mt-8 px-3 shrink-0">
+          <div className="eyebrow !text-amber-300 font-bold tracking-wider">Operational loop</div>
+          <p className="mt-1.5 text-xs leading-5 text-teal-100/80">
+            Observe → explain → decide<br />Human control stays in the loop.
+          </p>
+        </div>
+        <nav className="mt-7 flex-1 space-y-1.5" aria-label="Primary navigation">
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const active = location === href || (href === '/dashboard' && location.startsWith('/sites'));
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                data-testid={`link-nav-${label.toLowerCase().replace(' ', '-')}`}
+                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                  active
+                    ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
+                    : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Icon
+                  size={18}
+                  strokeWidth={active ? 2.3 : 1.9}
+                  className={active ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
+                />
+                <span>{label}</span>
+                {active && <ChevronRight size={15} className="ml-auto text-amber-300" />}
+              </Link>
+            );
+          })}
+          <div className="my-4 border-t border-teal-800/60" />
+          <Link
+            href="/settings"
+            onClick={() => setMobileOpen(false)}
+            data-testid="link-nav-settings"
+            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+              location === '/settings'
+                ? 'bg-teal-500/25 text-white font-semibold border border-teal-400/40 shadow-xs ring-1 ring-teal-400/20'
+                : 'text-slate-200 hover:bg-white/10 hover:text-white'
+            }`}
           >
-            <Database size={13} className="text-teal-700" />
-            <span className="hidden sm:inline">Export to Health System</span> (FHIR R4)
-          </button>
-          <span className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className="status-dot text-teal-600" />All systems nominal</span><button className="rounded-full border border-[hsl(var(--border))] bg-white px-2.5 py-1.5 text-xs font-semibold hover:bg-[hsl(var(--secondary))]" data-testid="button-user-menu">EA <span className="hidden sm:inline">/ Environmental analyst</span></button>
-        </div>
-      </header>
-      <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 lg:px-9 lg:py-9">
-        {children}
-      </main>
-      <FhirExportModal isOpen={fhirModalOpen} onClose={() => setFhirModalOpen(false)} />
+            <Settings2
+              size={18}
+              strokeWidth={location === '/settings' ? 2.3 : 1.9}
+              className={location === '/settings' ? 'text-teal-300' : 'text-teal-300/80 group-hover:text-teal-200'}
+            />
+            <span>Context & settings</span>
+            {location === '/settings' && <ChevronRight size={15} className="ml-auto text-amber-300" />}
+          </Link>
+        </nav>
+      </aside>
+
+      {mobileOpen && (
+        <button
+          aria-label="Close navigation"
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-30 bg-[hsl(var(--sidebar)/.35)] lg:hidden"
+          data-testid="button-close-navigation"
+        >
+          <X className="absolute right-4 top-4 text-white" />
+        </button>
+      )}
+
+      {/* Independently Scrollable Right Content */}
+      <div className="flex h-screen min-w-0 flex-1 flex-col overflow-y-auto">
+        <header className="sticky top-0 z-20 shrink-0 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border)/.7)] bg-[hsl(var(--background)/.9)] px-4 backdrop-blur-md sm:px-6 lg:px-9">
+          <div className="flex items-center gap-3">
+            <button
+              className="rounded-lg p-2 hover:bg-[hsl(var(--muted))] lg:hidden"
+              onClick={() => setMobileOpen(true)}
+              data-testid="button-open-navigation"
+            >
+              <MenuIcon size={19} />
+            </button>
+            <div className="hidden text-xs text-[hsl(var(--muted-foreground))] sm:block">
+              <span className="font-mono text-[hsl(var(--primary))]">AS /</span> municipal watershed intelligence
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFhirModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-teal-600/30 bg-teal-50/80 px-3 py-1.5 text-xs font-bold text-teal-900 hover:bg-teal-100 transition shadow-2xs"
+              title="Export canonical HL7 FHIR R4 records to municipal EHR or public health systems"
+            >
+              <Database size={13} className="text-teal-700" />
+              <span className="hidden sm:inline">Export to Health System</span> (FHIR R4)
+            </button>
+            <span className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex">
+              <span className="status-dot text-teal-600" />All systems nominal
+            </span>
+            <button
+              className="rounded-full border border-[hsl(var(--border))] bg-white px-2.5 py-1.5 text-xs font-semibold hover:bg-[hsl(var(--secondary))]"
+              data-testid="button-user-menu"
+            >
+              EA <span className="hidden sm:inline">/ Environmental analyst</span>
+            </button>
+          </div>
+        </header>
+        <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-7 sm:px-6 lg:px-9 lg:py-9">
+          {children}
+        </main>
+        <FhirExportModal isOpen={fhirModalOpen} onClose={() => setFhirModalOpen(false)} />
+      </div>
     </div>
-  </div>;
+  );
 }
 
 function Home() {
