@@ -57,3 +57,7 @@ replit.md
 attached_assets/
 .cache/
 .local/
+
+# Vercel
+.vercel
+vercel.json

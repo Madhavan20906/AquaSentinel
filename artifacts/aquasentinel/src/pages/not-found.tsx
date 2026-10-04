@@ -14,8 +14,16 @@ export default function NotFound() {
           </div>
 
           <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
+            This route could not be found. Return to the watershed intelligence overview.
           </p>
+          <div className="mt-6">
+            <a
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-lg bg-teal-700 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-800 transition"
+            >
+              Back to Dashboard
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

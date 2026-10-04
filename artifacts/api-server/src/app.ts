@@ -24,24 +24,32 @@ app.get("/healthz", (_req, res) => {
 
 app.use("/api", authMiddleware, router);
 
-// Serve static frontend build when present (unified single-service deployment)
-const candidateDistDirs = [
-  path.resolve(process.cwd(), "artifacts", "aquasentinel", "dist", "public"),
-  path.resolve(process.cwd(), "..", "aquasentinel", "dist", "public"),
-  path.resolve(process.cwd(), "dist", "public"),
-  path.resolve(process.cwd(), "public"),
-];
+function findClientDist(): string | undefined {
+  const candidateDistDirs = [
+    path.resolve(process.cwd(), "artifacts", "aquasentinel", "dist", "public"),
+    path.resolve(process.cwd(), "..", "aquasentinel", "dist", "public"),
+    path.resolve(import.meta.dirname, "..", "..", "aquasentinel", "dist", "public"),
+    path.resolve(import.meta.dirname, "..", "..", "..", "artifacts", "aquasentinel", "dist", "public"),
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(process.cwd(), "public"),
+  ];
+  return candidateDistDirs.find((dir) => fs.existsSync(path.join(dir, "index.html")));
+}
 
-const clientDist = candidateDistDirs.find((dir) => fs.existsSync(path.join(dir, "index.html")));
-
+const clientDist = findClientDist();
 if (clientDist) {
   app.use(express.static(clientDist));
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path === "/healthz") {
-      return next();
-    }
-    res.sendFile(path.join(clientDist, "index.html"));
-  });
 }
+
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path === "/healthz") {
+    return next();
+  }
+  const dist = clientDist || findClientDist();
+  if (dist && fs.existsSync(path.join(dist, "index.html"))) {
+    return res.sendFile(path.join(dist, "index.html"));
+  }
+  next();
+});
 
 export default app;
