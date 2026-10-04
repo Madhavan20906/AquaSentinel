@@ -6,9 +6,17 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-const UPLOADS_DIR = path.resolve(process.cwd(), "public", "uploads");
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+const isVercel = Boolean(process.env.VERCEL);
+const UPLOADS_DIR = isVercel
+  ? path.join("/tmp", "uploads")
+  : path.resolve(process.cwd(), "public", "uploads");
+
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch {
+  // Graceful fallback for read-only environments
 }
 
 // 1. Request presigned upload URL
