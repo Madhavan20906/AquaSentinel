@@ -1176,6 +1176,51 @@ function Interoperability() {
   const [copied, setCopied] = useState(false);
   const rows = tab === 'Observation' ? observations.data ?? [] : risks.data ?? [];
 
+  const getResourceSubject = (row: any): string => {
+    if (!row) return 'Watershed Location';
+    if (typeof row.subject === 'string' && row.subject.trim()) return row.subject;
+    if (row.subject?.display) return row.subject.display;
+    if (row.subject?.reference) return row.subject.reference;
+    if (row.siteName) return row.siteName;
+    if (row.siteId) return `Site: ${row.siteId}`;
+    if (row.location) return `Location: ${row.location}`;
+    return 'Adyar River Monitoring Basin';
+  };
+
+  const getResourceCodeOrOutcome = (row: any): string => {
+    if (!row) return 'Environmental Observation';
+    if (typeof row.code === 'string' && row.code.trim()) return row.code;
+    if (row.code?.text) return row.code.text;
+    if (row.code?.coding?.[0]?.display) return row.code.coding[0].display;
+    if (row.code?.coding?.[0]?.code) return row.code.coding[0].code;
+    if (row.prediction) {
+      if (typeof row.prediction.outcome === 'string') return row.prediction.outcome;
+      if (Array.isArray(row.prediction) && row.prediction[0]?.outcome?.text) return row.prediction[0].outcome.text;
+      if (row.prediction.outcome?.text) return row.prediction.outcome.text;
+    }
+    return 'Water turbidity & ecosystem signal';
+  };
+
+  const getResourceEffectiveTime = (row: any): string => {
+    if (!row) return 'Recent';
+    const val = row.effectiveDateTime || row.occurrenceDateTime || row.createdAt || row.lastUpdated;
+    return val ? formatTime(val) : 'Recent';
+  };
+
+  const handleSelectResource = (row: any) => {
+    if (selectedResource?.id === row.id) {
+      setSelectedResource(null);
+      return;
+    }
+    setSelectedResource(row);
+    setTimeout(() => {
+      const el = document.getElementById('fhir-top-inspector');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
+
   const runValidation = async () => {
     setValidating(true);
     try {
@@ -1325,12 +1370,104 @@ function Interoperability() {
       </div>
     )}
 
+    {/* Active Resource Top Inspector (Presented immediately at the top when row or > is clicked) */}
+    {selectedResource && (
+      <div id="fhir-top-inspector" className="mb-6 rounded-2xl border border-teal-500/40 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 p-6 text-white shadow-2xl animate-in fade-in slide-in-from-top-3 duration-300">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-teal-800/40 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-teal-500/20 border border-teal-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-teal-300">
+                Active Inspector · HL7 FHIR R4
+              </span>
+              <span className="rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300 uppercase">
+                {selectedResource.status || 'final'}
+              </span>
+            </div>
+            <h2 className="mt-2 font-display text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
+              <Database size={22} className="text-teal-400 shrink-0" />
+              <span className="break-all">{selectedResource.resourceType} / {selectedResource.id}</span>
+            </h2>
+            <div className="mt-1 text-xs text-slate-300">
+              Canonical HL7 FHIR specification conforming to US Core &amp; WHO Environmental Observation profiles.
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(JSON.stringify(selectedResource, null, 2));
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="flex items-center gap-1.5 rounded-lg border border-teal-600/40 bg-teal-800/40 px-3 py-1.5 text-xs font-semibold text-teal-200 hover:bg-teal-700/60 transition cursor-pointer"
+            >
+              {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} className="text-teal-300" />}
+              <span>{copied ? 'Copied' : 'Copy JSON'}</span>
+            </button>
+            <button
+              onClick={() => setSelectedResource(null)}
+              className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              title="Close Top Inspector"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 3-Card Summary Overview */}
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="p-3 rounded-xl bg-slate-950/60 border border-teal-800/30">
+            <div className="text-[10px] font-mono uppercase text-teal-400 font-semibold">Subject / Monitoring Location</div>
+            <div className="mt-1 text-sm font-bold text-white truncate" title={getResourceSubject(selectedResource)}>
+              {getResourceSubject(selectedResource)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-slate-400 font-mono">
+              {'location' in selectedResource ? `Reach: ${selectedResource.location}` : 'Adyar Basin Reach'}
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-950/60 border border-teal-800/30">
+            <div className="text-[10px] font-mono uppercase text-teal-400 font-semibold">Observation / Outcome Metric</div>
+            <div className="mt-1 text-sm font-bold text-amber-300 truncate" title={getResourceCodeOrOutcome(selectedResource)}>
+              {getResourceCodeOrOutcome(selectedResource)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-slate-400 font-mono">
+              {'value' in selectedResource ? `Value: ${selectedResource.value} ${selectedResource.unit || ''}` : ('valueQuantity' in selectedResource ? `${selectedResource.valueQuantity.value} ${selectedResource.valueQuantity.unit || ''}` : 'Probability Assessment')}
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-950/60 border border-teal-800/30">
+            <div className="text-[10px] font-mono uppercase text-teal-400 font-semibold">Effective Timestamp &amp; Interop</div>
+            <div className="mt-1 text-sm font-bold text-white">
+              {getResourceEffectiveTime(selectedResource)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-emerald-400 font-mono">
+              ✓ Ready for Municipal GIS Ingestion
+            </div>
+          </div>
+        </div>
+
+        {/* Raw Canonical JSON Viewer */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-mono font-bold text-teal-300 uppercase tracking-wider">
+              Canonical HL7 FHIR R4 JSON Payload
+            </span>
+          </div>
+          <pre className="max-h-72 overflow-x-auto rounded-xl bg-slate-950 p-4 font-mono text-[11px] leading-5 text-teal-200 border border-teal-900/60 shadow-inner">
+            {JSON.stringify(selectedResource, null, 2)}
+          </pre>
+        </div>
+      </div>
+    )}
+
     <div className="panel overflow-hidden border border-teal-800/15">
       <div className="flex flex-wrap items-center gap-2 border-b border-teal-800/15 bg-teal-900/[0.04] p-3">
-        <button onClick={() => setTab('Observation')} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${tab === 'Observation' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`} data-testid="tab-fhir-observation">
+        <button onClick={() => { setTab('Observation'); setSelectedResource(null); }} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${tab === 'Observation' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`} data-testid="tab-fhir-observation">
           Observation <span className="ml-1 font-mono">({observations.data?.length ?? 0})</span>
         </button>
-        <button onClick={() => setTab('RiskAssessment')} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${tab === 'RiskAssessment' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`} data-testid="tab-fhir-risk">
+        <button onClick={() => { setTab('RiskAssessment'); setSelectedResource(null); }} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${tab === 'RiskAssessment' ? 'bg-white/95 text-teal-950 shadow-xs border border-teal-700/20' : 'text-teal-900/70 hover:text-teal-950'}`} data-testid="tab-fhir-risk">
           RiskAssessment <span className="ml-1 font-mono">({risks.data?.length ?? 0})</span>
         </button>
         <span className="ml-auto hidden items-center gap-1.5 text-[10px] uppercase tracking-wider text-teal-800 sm:flex font-mono">
@@ -1341,44 +1478,66 @@ function Interoperability() {
         <div className="p-5"><LoadingRows count={4} /></div>
       ) : rows.length ? (
         <div className="divide-y divide-teal-800/10">
-          {rows.map((row) => (
-            <div
-              className="grid gap-4 p-5 md:grid-cols-[1fr_1.3fr_auto] md:items-center hover:bg-teal-50/40 transition cursor-pointer"
-              key={row.id}
-              data-testid={`row-fhir-${row.id}`}
-              onClick={() => setSelectedResource(row)}
-            >
-              <div>
-                <div className="font-mono text-xs font-semibold text-[hsl(var(--primary))]">{row.resourceType}/{row.id}</div>
-                <div className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{'subject' in row ? row.subject : ''}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
-                <div>
-                  <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Status</div>
-                  <div className="mt-1 font-mono">{row.status}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Code / outcome</div>
-                  <div className="mt-1 truncate font-mono">{'code' in row ? row.code : row.prediction.outcome}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Effective</div>
-                  <div className="mt-1 font-mono">{formatTime('effectiveDateTime' in row ? row.effectiveDateTime : row.occurrenceDateTime)}</div>
-                </div>
-              </div>
-              <button
-                className="justify-self-start rounded-md p-2 text-teal-800 hover:bg-teal-100 hover:text-teal-950 transition cursor-pointer"
-                data-testid={`button-open-fhir-${row.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedResource(row);
-                }}
-                title="Inspect HL7 FHIR R4 JSON"
+          {rows.map((row) => {
+            const isSelected = selectedResource?.id === row.id;
+            return (
+              <div
+                className={`grid gap-4 p-5 md:grid-cols-[1fr_1.3fr_auto] md:items-center transition cursor-pointer ${
+                  isSelected
+                    ? 'bg-teal-50/90 border-l-4 border-l-teal-600 shadow-xs'
+                    : 'hover:bg-teal-50/40'
+                }`}
+                key={row.id}
+                data-testid={`row-fhir-${row.id}`}
+                onClick={() => handleSelectResource(row)}
               >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          ))}
+                <div>
+                  <div className="font-mono text-xs font-semibold text-[hsl(var(--primary))] flex items-center gap-2">
+                    <span>{row.resourceType}/{row.id}</span>
+                    {isSelected && (
+                      <span className="rounded bg-teal-600 text-white px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                        Viewing at top ▲
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-600">
+                    {getResourceSubject(row)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
+                  <div>
+                    <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Status</div>
+                    <div className="mt-1 font-mono font-medium text-slate-800">{row.status || 'final'}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Code / outcome</div>
+                    <div className="mt-1 truncate font-mono text-slate-800 font-medium" title={getResourceCodeOrOutcome(row)}>
+                      {getResourceCodeOrOutcome(row)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase text-[hsl(var(--muted-foreground))]">Effective</div>
+                    <div className="mt-1 font-mono text-slate-600">{getResourceEffectiveTime(row)}</div>
+                  </div>
+                </div>
+                <button
+                  className={`justify-self-start rounded-md p-2 transition cursor-pointer ${
+                    isSelected
+                      ? 'bg-teal-600 text-white shadow-xs'
+                      : 'text-teal-800 hover:bg-teal-100 hover:text-teal-950'
+                  }`}
+                  data-testid={`button-open-fhir-${row.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectResource(row);
+                  }}
+                  title="Inspect this resource at the top"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="p-6"><EmptyState title={`No ${tab} resources`} detail="The demo API has not emitted resources for this collection yet." /></div>
@@ -1387,65 +1546,6 @@ function Interoperability() {
     <div className="mt-5 rounded-lg bg-[hsl(var(--secondary)/.65)] p-4 text-xs leading-5 text-[hsl(var(--primary))]">
       <strong>Interoperability Status:</strong> AquaSentinel exports HL7 FHIR R4 Observation and RiskAssessment resources validated against the public HAPI FHIR validator. This allows immediate ingestion by municipal GIS, public health EHRs, and environmental regulatory reporting pipelines without custom adapters.
     </div>
-
-    {/* HL7 FHIR Resource Payload Inspection Modal */}
-    {selectedResource && (
-      <div className="fixed inset-0 z-50 grid place-items-center bg-teal-950/40 p-4 backdrop-blur-xs">
-        <div className="panel max-h-[85vh] w-full max-w-2xl overflow-y-auto p-6 bg-white border border-teal-800/25 shadow-2xl">
-          <div className="flex items-start justify-between border-b border-teal-800/15 pb-4">
-            <div>
-              <div className="eyebrow !text-teal-700">HL7 FHIR R4 Standard Resource Payload</div>
-              <h2 className="mt-1 font-display text-xl font-bold text-teal-950 flex items-center gap-2">
-                <Database size={18} className="text-teal-600" />
-                <span>{selectedResource.resourceType} / {selectedResource.id}</span>
-              </h2>
-              <div className="mt-1 text-xs text-slate-600">
-                Canonical HL7 FHIR specification conforming to US Core &amp; WHO Environmental Observation profiles.
-              </div>
-            </div>
-            <button
-              onClick={() => setSelectedResource(null)}
-              className="rounded-lg p-2 text-slate-500 hover:bg-teal-50 hover:text-teal-950 transition cursor-pointer"
-              data-testid="button-close-fhir-detail"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-bold text-teal-950 uppercase tracking-wider">
-                Raw Canonical JSON
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(selectedResource, null, 2));
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="flex items-center gap-1.5 rounded-md border border-teal-800/20 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-950 hover:bg-teal-100 transition cursor-pointer"
-              >
-                {copied ? <Check size={13} className="text-teal-700" /> : <Copy size={13} className="text-teal-700" />}
-                <span>{copied ? 'Copied to Clipboard' : 'Copy JSON'}</span>
-              </button>
-            </div>
-            <pre className="max-h-96 overflow-x-auto rounded-xl bg-slate-900 text-teal-200 p-4 font-mono text-[11px] leading-5 border border-slate-800 shadow-inner">
-              {JSON.stringify(selectedResource, null, 2)}
-            </pre>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between border-t border-teal-800/10 pt-4">
-            <span className="text-[11px] font-mono text-slate-500">
-              Valid for municipal GIS ingestion (ArcGIS / QGIS)
-            </span>
-            <Button variant="secondary" onClick={() => setSelectedResource(null)}>
-              Close inspector
-            </Button>
-          </div>
-        </div>
-      </div>
-    )}
   </div>;
 }
 
